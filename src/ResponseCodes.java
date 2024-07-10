@@ -1,28 +1,12 @@
-public enum ResponseCodes {
-    MSG(1),
-    ERR_NO_SUCH_USER(2),
-    ERR_NO_SUCH_CHANNEL(3),
-    NAME_SUCCESS(4),
-    INVALID_CHANNEL_NAME(5)
-    ;
-
-    private final int code;
-
-    ResponseCodes(int code) {
-        this.code = code;
-    }
-
-
-    public int getCode() {
-        return code;
-    }
-
-    public static ResponseCodes equals(int other) {
-        for (ResponseCodes responseCode : ResponseCodes.values()) {
-            if (responseCode.getCode() == other) {
-                return responseCode;
-            }
-        }
-        return null;
-    }
+/**
+ * Defines response codes for response messages to users.
+ */
+public class ResponseCodes{
+    public static final int MSG = 1;
+    public static final int ERR_NO_SUCH_USER = 2;
+    public static final int ERR_NO_SUCH_CHANNEL = 3;
+    public static final int ERR_NAME_SUCCESS = 4;
+    public static final int INVALID_CHANNEL_NAME = 5;
+    public static final int NAME_SUCCESS = 6;
+    public static final int LEFT_CHANNELS = 7;
 }

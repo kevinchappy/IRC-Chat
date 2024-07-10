@@ -70,4 +70,18 @@ public class User {
         writer.println(msg);
         writer.flush();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this){
+            return true;
+        }
+
+        if(!(obj instanceof User other)){
+            return false;
+        }
+
+        return name.equals(other.getName());
+    }
+
 }

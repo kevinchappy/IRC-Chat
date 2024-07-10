@@ -1,9 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class ClientHandler implements Runnable {
     private final User user;
@@ -40,7 +38,11 @@ public class ClientHandler implements Runnable {
 
 
     /**
-     * Logic for handling requests sent by users
+     * Handles messages sent by users.
+     * Makes use of MessageCodes to delineate between different requests.
+     * Typically a response with a ResponseCode is sent back to user depending on the type of
+     * request and if it was successful
+     *
      *
      * @param msg  Message to be handled
      * @param user The user that sent message
@@ -51,21 +53,23 @@ public class ClientHandler implements Runnable {
 
         switch (msg.getCommand()) {
             //Sends message to all users within given channels
-            case "PRIVMSG":
+            case MessageCodes.MESSAGE:
                 //Ignore message if no body
                 if (msg.getTrailing() != null) {
                     for (String target : msg.getParams()) {
                         if (ch.channelExists(target)) {
                             Channel channel = ch.getChannel(target);
                             if (msg.getTarget() == null) {
-                                channel.broadcast(responseBuilder.build(ResponseCodes.MSG.getCode(), new String[]{channel.getName(), user.getName()}, msg.getTrailing()));
+                                channel.broadcast(responseBuilder.build(ResponseCodes.MSG, new String[]{channel.getName(), user.getName()}, msg.getTrailing()), null);
                             } else {
-                                channel.broadcast(responseBuilder.build(ResponseCodes.MSG.getCode(), new String[]{channel.getName(), msg.getTarget()}, msg.getTrailing()));
+                                channel.broadcast(responseBuilder.build(ResponseCodes.MSG, new String[]{channel.getName(), msg.getTarget()}, msg.getTrailing()), null);
 
                             }
                             //Send message to specific user if no channel available
                         } else if (ircServer.userExists(target) && !target.equalsIgnoreCase("guest")) {
-                            ircServer.getUserByName(target).broadcastMessage(responseBuilder.build(ResponseCodes.MSG.getCode(), new String[]{user.getName()}, msg.getTrailing()));
+                            ircServer.getUserByName(target).broadcastMessage(responseBuilder.build(ResponseCodes.MSG, new String[]{user.getName()}, msg.getTrailing()));
+                        }else {
+                            //TODO: error if no viable user
                         }
                     }
                 }
@@ -73,7 +77,7 @@ public class ClientHandler implements Runnable {
             //User to join channel
             //Create new channel if no channel already exists
             //Channel has to start with #
-            case "JOIN":
+            case MessageCodes.JOIN:
                 for (String param : msg.getParams()) {
                     if (param.startsWith("#") && !param.contains("#") && param.length() < 12) {
                         if (ch.channelExists(param)) {
@@ -87,46 +91,50 @@ public class ClientHandler implements Runnable {
                             user.addChannel(channel);
                         }
                     }else{
-                        user.broadcastMessage(responseBuilder.build(ResponseCodes.INVALID_CHANNEL_NAME.getCode(), new String[]{}));
+                        user.broadcastMessage(responseBuilder.build(ResponseCodes.INVALID_CHANNEL_NAME, new String[]{}));
                         //TODO: error message if invalid channel name format
                     }
                 }
                 break;
 
                 //User leave channel
-            case "PART":
+            case MessageCodes.PART:
                 for(String param : msg.getParams()){
+                    ArrayList <String> leftChannels = new ArrayList<>();
                     if(param.startsWith("#")){
                         Channel channel = ch.getChannel(param);
                         if (channel != null){
                             channel.remove(user);
                             user.removeChannel(channel);
+                            leftChannels.add(channel.getName());
                         }
 
+                        if (leftChannels.isEmpty()){
+                            user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_NO_SUCH_CHANNEL, new String[]{}));
+                        }else{
+                            user.broadcastMessage(responseBuilder.build(ResponseCodes.LEFT_CHANNELS, leftChannels.toArray(new String[0])));
+                        }
 
-                        //TODO: reply on success
                     }
                 }
-
-
                 break;
-            case "NICK":
+
+                //Change of user nickname
+            case MessageCodes.NICKNAME:
                 if (!msg.getParams().isEmpty()){
                     String newName = msg.getParams().getFirst();
-
-                    //TODO: Add more robust string checking
                     if (!newName.contains("#") && !newName.contains(":") && !newName.equalsIgnoreCase("guest") && newName.length() <= 12 ){
                         user.setName(newName);
-                        user.broadcastMessage(responseBuilder.build(ResponseCodes.NAME_SUCCESS.getCode(), new String[]{newName}));
+                        user.broadcastMessage(responseBuilder.build(ResponseCodes.NAME_SUCCESS, new String[]{newName}));
                         //TODO: Add response code on success
                     }else{
                         //TODO: error response to client if failed
                     }
                 }
-                System.out.println("NICK");
                 break;
 
-                //Sends names of all user that are on the same channels as
+                //Sends names of all users that are on the same channels as sender
+            //TODO: fix this case
             case "NAMES":
                 Set<String> set = new HashSet<>();
 

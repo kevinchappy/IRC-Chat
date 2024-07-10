@@ -24,10 +24,18 @@ public class Channel {
         users.remove(user);
     }
 
-    public void broadcast(String msg) {
+    /**
+     * Broadcasts message to all users within the channel
+     *
+     * @param msg         Message to be broadcast
+     * @param ignoredUser Name of a user that will not be broadcast to. Typically sender.
+     */
+    public void broadcast(String msg, String ignoredUser) {
         System.out.println("before channel.broadcast() " + msg);
         for (User user : users) {
-            user.broadcastMessage(msg);
+            if (ignoredUser == null || !user.getName().equals(ignoredUser)){
+                user.broadcastMessage(msg);
+            }
         }
     }
 
@@ -46,5 +54,18 @@ public class Channel {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this){
+            return true;
+        }
+
+        if(!(obj instanceof Channel other)){
+            return false;
+        }
+
+        return name.equals(other.getName());
     }
 }
