@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -10,6 +11,7 @@ public class User {
     private final OutputStream outputStream;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private PrintWriter writer;
+    private Vector<Channel> channels = new Vector<>();
 
 
     public User(Socket socket, String name) throws IOException {
@@ -35,7 +37,18 @@ public class User {
         lock.writeLock().lock();
         this.name = name;
         lock.writeLock().unlock();
+    }
 
+    public void addChannel(Channel channel){
+        channels.add(channel);
+    }
+
+    public void removeChannel(Channel channel){
+        channels.remove(channel);
+    }
+
+    public Vector<Channel> getChannels(){
+        return channels;
     }
 
     public InputStream getInput() {

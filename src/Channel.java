@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -27,6 +29,14 @@ public class Channel {
         for (User user : users) {
             user.broadcastMessage(msg);
         }
+    }
+
+    public List<String> getUserNames(){
+        List<String> temp = new ArrayList<>();
+        for (User user : users){
+            temp.add(user.getName());
+        }
+        return temp;
     }
 
     public String getName() {

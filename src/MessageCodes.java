@@ -19,9 +19,9 @@ public enum MessageCodes {
     }
 
 
-    public static MessageCodes equals(String id) {
+    public static MessageCodes equals(String other) {
         for (MessageCodes messageCode : MessageCodes.values()) {
-            if (messageCode.toString().equals(id)) {
+            if (messageCode.toString().equals(other)) {
                 return messageCode;
             }
         }
