@@ -15,8 +15,8 @@ public class ChannelHandler {
         return channels.containsKey(channelName);
     }
 
-    public void addChannels(String name){
-        channels.put(name, new Channel(name));
+    public void addChannels(Channel channel){
+        channels.put(channel.getName(), channel);
     }
 
     /**

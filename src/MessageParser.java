@@ -20,26 +20,28 @@ public class MessageParser {
     /**
      * Parses message following the IRC format:
      * :<prefix> <command> <parameters>
+     * Prefix is optional
+     * Any parameters after a ':' is considered trailing and joined in one string. This is usually the actual message
      *
-     * @param rawString Raw message to be parsed
+     * @param rawMessage Raw message to be parsed
      */
-    public ParsedMessage parse(String rawString) {
+    public ParsedMessage parse(String rawMessage) {
         String prefix = null;
         String command;
         ArrayList<String> params = new ArrayList<>();
         String trailing = null;
         int currentParameterI;
-        System.out.println(rawString);
+        System.out.println(rawMessage);
 
         //Valid message has to end with \r\n
-        if (rawString.endsWith("\\r\\n")) {
-            rawString = rawString.substring(0, rawString.length() - 4);
+        if (rawMessage.endsWith("\\r\\n")) {
+            rawMessage = rawMessage.substring(0, rawMessage.length() - 4);
         } else {
             return null;
         }
 
-        System.out.println(rawString);
-        String[] array = rawString.split(" ");
+        System.out.println(rawMessage);
+        String[] array = rawMessage.split(" ");
 
         if (array[0].startsWith(":")) {
             prefix = array[0];

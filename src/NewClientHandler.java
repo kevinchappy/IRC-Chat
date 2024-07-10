@@ -9,6 +9,12 @@ public class NewClientHandler implements Runnable {
         this.ircServer = ircServer;
     }
 
+    /**
+     * Thread for accepting new clients to server
+     * New user is given default name Guest
+     * User is added to userlist
+     * New ClientHandler thread is spawned for specific user
+     */
     @Override
     public void run() {
         try (ServerSocket server = new ServerSocket(IRCServer.defaultPort)) {
