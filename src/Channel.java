@@ -20,6 +20,10 @@ public class Channel {
         }
     }
 
+    public boolean isEmpty(){
+        return users.isEmpty();
+    }
+
     public void remove(User user) {
         users.remove(user);
     }
@@ -31,7 +35,7 @@ public class Channel {
      * @param ignoredUser Name of a user that will not be broadcast to. Typically sender.
      */
     public void broadcast(String msg, String ignoredUser) {
-        System.out.println("before channel.broadcast() " + msg);
+        System.out.println("Before Channel Broadcast; " + name + "; " + msg);
         for (User user : users) {
             if (ignoredUser == null || !user.getName().equals(ignoredUser)){
                 user.broadcastMessage(msg);
@@ -67,5 +71,11 @@ public class Channel {
         }
 
         return name.equals(other.getName());
+    }
+
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 }

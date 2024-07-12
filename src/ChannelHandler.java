@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChannelHandler {
@@ -42,6 +43,10 @@ public class ChannelHandler {
 
     public void addUserToChannel(User user, String name){
         channels.get(name).add(user);
+    }
+
+    public Iterator<String> getKeyIterator(){
+        return channels.keySet().iterator();
     }
 
 

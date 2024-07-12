@@ -6,12 +6,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class User {
     private final Socket socket;
-    private String name;
-    private InputStream input;
     private final OutputStream outputStream;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private PrintWriter writer;
     private Vector<Channel> channels = new Vector<>();
+    private String name;
+    private InputStream input;
+    private PrintWriter writer;
+
 
 
     public User(Socket socket, String name) throws IOException {
@@ -55,20 +56,20 @@ public class User {
         return input;
     }
 
+
+
+    public void broadcastMessage(String msg) {
+        if (writer == null){
+            writer = new PrintWriter(outputStream);
+        }
+        writer.println(msg);
+        writer.flush();
+    }
+
     public void close() throws IOException {
         input.close();
         outputStream.close();
         writer.close();
-    }
-
-    public void broadcastMessage(String msg) {
-        System.out.println("before user.broadcastMessage() " + msg);
-        if (writer == null){
-            writer = new PrintWriter(outputStream);
-        }
-        System.out.println("before writer.println() "  + msg);
-        writer.println(msg);
-        writer.flush();
     }
 
     @Override
@@ -84,4 +85,8 @@ public class User {
         return name.equals(other.getName());
     }
 
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

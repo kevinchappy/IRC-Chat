@@ -8,10 +8,12 @@ public class ClientHandler implements Runnable {
     private final IRCServer ircServer;
     private final MessageParser parser = new MessageParser();
     private final ResponseBuilder responseBuilder = new ResponseBuilder();
+    private final ChannelHandler ch;
 
     ClientHandler(User user, IRCServer ircServer) {
         this.user = user;
         this.ircServer = ircServer;
+        this.ch = ircServer.getChannelHandler();
     }
 
     @Override
@@ -19,137 +21,209 @@ public class ClientHandler implements Runnable {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(user.getInput()));
 
+            user.broadcastMessage(responseBuilder.build(ResponseCodes.JOINED_SERVER, new String[]{}, "Welcome to the server!"));
+
             String msg;
             while ((msg = in.readLine()) != null && ircServer.isAlive()) {
                 ParsedMessage parsedMessage = parser.parse(msg);
                 if (parsedMessage != null) {
-                    System.out.println(user.getName());
-                    handleMessage(parsedMessage, user);
+                    if (!user.getName().equalsIgnoreCase("guest") ||
+                            parsedMessage.command().equalsIgnoreCase(MessageCodes.NICKNAME)) {
+                        handleMessage(parsedMessage, user);
+                    } else {
+                        user.broadcastMessage(responseBuilder.build(ResponseCodes.NO_USER_NAME));
+                    }
                 }
             }
             in.close();
             user.close();
-        } catch (IOException ignored) {
+            ircServer.removeUser(user);
+        } catch (IOException e) {
+            ircServer.removeUser(user);
         }
-
-
-        ircServer.removeUser(user);
     }
 
 
     /**
      * Handles messages sent by users.
      * Makes use of MessageCodes to delineate between different requests.
-     * Typically a response with a ResponseCode is sent back to user depending on the type of
+     * Typically, a response with a ResponseCode is sent back to user depending on the type of
      * request and if it was successful
      *
-     *
      * @param msg  Message to be handled
-     * @param user The user that sent message
+     * @param user The user that sent the message
      */
 //TODO: Implement: Get users, get channels, message of the day and responses to client
     private void handleMessage(ParsedMessage msg, User user) {
-        ChannelHandler ch = ircServer.getChannelHandler();
 
-        switch (msg.getCommand()) {
+        switch (msg.command()) {
             //Sends message to all users within given channels
             case MessageCodes.MESSAGE:
-                //Ignore message if no body
-                if (msg.getTrailing() != null) {
-                    for (String target : msg.getParams()) {
-                        if (ch.channelExists(target)) {
-                            Channel channel = ch.getChannel(target);
-                            if (msg.getTarget() == null) {
-                                channel.broadcast(responseBuilder.build(ResponseCodes.MSG, new String[]{channel.getName(), user.getName()}, msg.getTrailing()), null);
-                            } else {
-                                channel.broadcast(responseBuilder.build(ResponseCodes.MSG, new String[]{channel.getName(), msg.getTarget()}, msg.getTrailing()), null);
-
-                            }
-                            //Send message to specific user if no channel available
-                        } else if (ircServer.userExists(target) && !target.equalsIgnoreCase("guest")) {
-                            ircServer.getUserByName(target).broadcastMessage(responseBuilder.build(ResponseCodes.MSG, new String[]{user.getName()}, msg.getTrailing()));
-                        }else {
-                            //TODO: error if no viable user
-                        }
-                    }
-                }
+                handleSendMessage(msg, user);
                 break;
             //User to join channel
             //Create new channel if no channel already exists
             //Channel has to start with #
             case MessageCodes.JOIN:
-                for (String param : msg.getParams()) {
-                    if (param.startsWith("#") && !param.contains("#") && param.length() < 12) {
-                        if (ch.channelExists(param)) {
-                            Channel channel = ch.getChannel(param);
-                            channel.add(user);
-                            user.addChannel(channel);
-                        } else {
-                            Channel channel = new Channel(param);
-                            ch.addChannels(channel);
-                            channel.add(user);
-                            user.addChannel(channel);
-                        }
-                    }else{
-                        user.broadcastMessage(responseBuilder.build(ResponseCodes.INVALID_CHANNEL_NAME, new String[]{}));
-                        //TODO: error message if invalid channel name format
-                    }
-                }
+                handleJoin(msg, user);
                 break;
 
-                //User leave channel
+            //User leave channel
             case MessageCodes.PART:
-                for(String param : msg.getParams()){
-                    ArrayList <String> leftChannels = new ArrayList<>();
-                    if(param.startsWith("#")){
-                        Channel channel = ch.getChannel(param);
-                        if (channel != null){
-                            channel.remove(user);
-                            user.removeChannel(channel);
-                            leftChannels.add(channel.getName());
-                        }
-
-                        if (leftChannels.isEmpty()){
-                            user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_NO_SUCH_CHANNEL, new String[]{}));
-                        }else{
-                            user.broadcastMessage(responseBuilder.build(ResponseCodes.LEFT_CHANNELS, leftChannels.toArray(new String[0])));
-                        }
-
-                    }
-                }
+                handlePart(msg, user);
                 break;
 
-                //Change of user nickname
+            //Change of user nickname
             case MessageCodes.NICKNAME:
-                if (!msg.getParams().isEmpty()){
-                    String newName = msg.getParams().getFirst();
-                    if (!newName.contains("#") && !newName.contains(":") && !newName.equalsIgnoreCase("guest") && newName.length() <= 12 ){
-                        user.setName(newName);
-                        user.broadcastMessage(responseBuilder.build(ResponseCodes.NAME_SUCCESS, new String[]{newName}));
-                        //TODO: Add response code on success
-                    }else{
-                        //TODO: error response to client if failed
-                    }
-                }
+                handleNickname(msg, user);
                 break;
 
-                //Sends names of all users that are on the same channels as sender
-            //TODO: fix this case
+            //Sends names of all users that are on the same channels as sender
             case "NAMES":
-                Set<String> set = new HashSet<>();
-
-                for (Channel channel : user.getChannels()){
-                    set.addAll(channel.getUserNames());
-                }
-                Iterator<String> iter = set.iterator();
-                StringBuilder sb = new StringBuilder();
-                while(iter.hasNext()){
-                    sb.append(iter.next());
-                }
-
-
+                handleNames(user);
+                break;
+            case "CHANNELS":
+                handleChannel(user);
+                break;
             default:
-                System.out.println("Default");
+                user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_INVALID_MESSAGE));
+        }
+    }
+
+    private void handleNames(User user) {
+        ArrayList<String> names = new ArrayList<>();
+
+        for (Channel channel : user.getChannels()) {
+            names.add(channel.getName());
+            names.addAll(channel.getUserNames());
+        }
+
+        if (!names.isEmpty()) {
+            user.broadcastMessage(responseBuilder.build(ResponseCodes.NAME_LIST, names.toArray(new String[0])));
+        } else {
+            user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_NO_AVAILABLE_NAMES));
+        }
+    }
+
+    private void handleChannel(User user) {
+        ArrayList<String> names = new ArrayList<>();
+
+        Iterator<String> iter = ch.getKeyIterator();
+
+        while (iter.hasNext()) {
+            String name = iter.next();
+            names.add(name);
+        }
+
+        user.broadcastMessage(responseBuilder.build(ResponseCodes.CHANNEL_NAMES, names.toArray(new String[0])));
+
+    }
+
+    private void handleNickname(ParsedMessage msg, User user) {
+        if (!msg.params().isEmpty()) {
+            String oldName = user.getName();
+            String newName = msg.params().getFirst();
+            if (newName.length() >= 3 && newName.length() <= 12 && !newName.contains("#") &&
+                    !newName.contains(":") && !newName.contains(" ") && !newName.equalsIgnoreCase("guest") && ircServer.getUserByName(newName) == null) {
+
+                user.setName(newName);
+                for (Channel channel : user.getChannels()) {
+                    channel.broadcast(responseBuilder.build(ResponseCodes.CHANGED_NAME, new String[]{oldName, newName}), user.getName());
+                }
+                user.broadcastMessage(responseBuilder.build(ResponseCodes.NAME_SUCCESS, new String[]{newName}));
+
+            } else {
+                user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_INVALID_NAME));
+            }
+        }
+    }
+
+    private void handlePart(ParsedMessage msg, User user) {
+        ArrayList<Channel> leftChannels = new ArrayList<>();
+
+        for (String param : msg.params()) {
+            if (param.startsWith("#")) {
+                Channel channel = ch.getChannel(param);
+                if (channel != null) {
+                    channel.remove(user);
+                    user.removeChannel(channel);
+                    leftChannels.add(channel);
+                    if (channel.isEmpty()) {
+                        ch.removeChannel(channel.getName());
+                    }
+                }
+            }
+        }
+
+        if (leftChannels.isEmpty()) {
+            user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_NO_SUCH_CHANNEL));
+        } else {
+            ArrayList<String> leftChannelNames = new ArrayList<>();
+            for (Channel leftChannel : leftChannels) {
+                leftChannel.broadcast(responseBuilder.build(ResponseCodes.USER_LEFT_CHANNEL, new String[]{leftChannel.getName(), user.getName()}), null);
+                leftChannelNames.add(leftChannel.getName());
+            }
+            user.broadcastMessage(responseBuilder.build(ResponseCodes.LEFT_CHANNELS, leftChannelNames.toArray(new String[0])));
+        }
+
+    }
+
+    private void handleJoin(ParsedMessage msg, User user) {
+        for (String param : msg.params()) {
+            if (param.length() <= 50 && param.startsWith("#") && !param.substring(1).contains("#") &&
+                    !param.substring(1).contains(" ")) {
+                if (ch.channelExists(param)) {
+                    Channel channel = ch.getChannel(param);
+                    channel.add(user);
+                    user.addChannel(channel);
+                    channel.broadcast(responseBuilder.build(ResponseCodes.USER_JOINED_CHANNEL,
+                            new String[]{channel.getName(), user.getName()}, null), user.getName());
+
+                    ArrayList<String> joinedChannelMessage = new ArrayList<>();
+                    joinedChannelMessage.add(channel.getName());
+                    joinedChannelMessage.addAll(channel.getUserNames());
+                    user.broadcastMessage(responseBuilder.build(ResponseCodes.JOINED_CHANNEL, joinedChannelMessage.toArray(new String[0])));
+                } else {
+                    Channel channel = new Channel(param);
+                    ch.addChannels(channel);
+                    channel.add(user);
+                    user.addChannel(channel);
+                    user.broadcastMessage(responseBuilder.build(ResponseCodes.CREATED_CHANNEL, new String[]{channel.getName()}));
+                }
+            } else {
+                user.broadcastMessage(responseBuilder.build(ResponseCodes.INVALID_CHANNEL_NAME));
+            }
+        }
+    }
+
+    /**
+     * Helper method to handle sending message to all users in a channel or to a specific user.
+     *
+     * @param msg
+     * @param user
+     */
+    private void handleSendMessage(ParsedMessage msg, User user) {
+        //Ignore message if no body
+        if (msg.trailing() != null) {
+            // ArrayList<String> unableToSend = new ArrayList<>();
+            String param = msg.params().getFirst();
+            User target;
+            Channel channel;
+            if ((channel = ch.getChannel(param)) != null && user.getChannels().contains(ch.getChannel(param))) {
+
+                channel.broadcast(responseBuilder.build(ResponseCodes.CHANNEL_MSG,
+                        new String[]{user.getName()}, msg.trailing()), user.getName());
+                user.broadcastMessage(responseBuilder.build(ResponseCodes.MESSAGE_SENT));
+
+            } else if ((target = ircServer.getUserByName(param)) != null && !target.getName().equalsIgnoreCase("guest")) {
+
+                target.broadcastMessage(responseBuilder.build(ResponseCodes.USER_MSG,
+                        new String[]{user.getName()}, msg.trailing()));
+                user.broadcastMessage(responseBuilder.build(ResponseCodes.MESSAGE_SENT));
+
+            } else {
+                user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_NO_RECIPIENT));
+            }
         }
     }
 

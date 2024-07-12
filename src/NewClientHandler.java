@@ -27,11 +27,11 @@ public class NewClientHandler implements Runnable {
                     IRCServer.EXECUTOR.submit(clientHandler);
 
                 } catch (IOException ex) {
-                    System.err.println("IOEXCEPTION");
+                    System.err.println("UNABLE TO ACCEPT NEW USER");
                 }
             }
         } catch (IOException ex) {
-            System.err.println("IOEXCEPTION");
+            System.err.println("UNABLE TO START SERVER");
         }
     }
 }

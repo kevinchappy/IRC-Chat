@@ -1,34 +1,46 @@
+import java.util.StringJoiner;
+
 public class ResponseBuilder {
 
 
-    private final String delimiter = "§";
+    public static final char DELIMITER = ' ';
 
 
-    public ResponseBuilder(){
+    public ResponseBuilder() {
 
     }
 
 
-    public String build (int code, String[] params){
-       return build(code, params, null);
+    public String build(int code) {
+        return build(code, null, null);
     }
-    public String build(int code, String[] params, String trailing){
+
+    public String build(int code, String[] params) {
+        return build(code, params, null);
+    }
+
+    public String build(int code, String[] params, String trailing) {
         StringBuilder sb = new StringBuilder();
-        sb.append(code).append(delimiter);
+        sb.append(code).append(DELIMITER);
 
-        for (String param : params){
-            sb.append(param).append(delimiter);
+        if (params != null) {
+            for (String param : params) {
+                sb.append(param).append(DELIMITER);
+            }
         }
 
-        if(trailing != null){
-            if (!trailing.startsWith(":")){
+        if (trailing != null) {
+            if (!trailing.startsWith(":")) {
                 trailing = ":" + trailing;
             }
             sb.append(trailing);
         }
 
+        if(sb.charAt(sb.length() - 1) == DELIMITER){
+            sb.setLength(sb.length() - 1);
+        }
+
         sb.append("\r\n");
         return sb.toString();
     }
-
 }

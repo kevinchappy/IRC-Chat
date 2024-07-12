@@ -31,7 +31,7 @@ public class MessageParser {
         ArrayList<String> params = new ArrayList<>();
         String trailing = null;
         int currentParameterI;
-        System.out.println(rawMessage);
+
 
         //Valid message has to end with \r\n
         if (rawMessage.endsWith("\\r\\n")) {
@@ -40,7 +40,6 @@ public class MessageParser {
             return null;
         }
 
-        System.out.println(rawMessage);
         String[] array = rawMessage.split(" ");
 
         if (array[0].startsWith(":")) {
