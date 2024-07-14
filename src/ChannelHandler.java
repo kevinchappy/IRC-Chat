@@ -41,9 +41,6 @@ public class ChannelHandler {
         return channels.get(name);
     }
 
-    public void addUserToChannel(User user, String name){
-        channels.get(name).add(user);
-    }
 
     public Iterator<String> getKeyIterator(){
         return channels.keySet().iterator();

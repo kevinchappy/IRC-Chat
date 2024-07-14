@@ -79,10 +79,10 @@ public class ClientHandler implements Runnable {
                 break;
 
             //Sends names of all users that are on the same channels as sender
-            case "NAMES":
+            case MessageCodes.NAMES:
                 handleNames(user);
                 break;
-            case "CHANNELS":
+            case MessageCodes.CHANNELS:
                 handleChannel(user);
                 break;
             default:

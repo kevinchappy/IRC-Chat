@@ -6,4 +6,6 @@ public class MessageCodes{
     public static final String JOIN = "JOIN";
     public static final String NICKNAME = "NICK";
     public static final String PART = "PART";
+    public static final String NAMES = "NAMES";
+    public static final String CHANNELS = "CHANNELS";
 }
