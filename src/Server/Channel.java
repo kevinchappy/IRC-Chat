@@ -1,3 +1,5 @@
+package Server;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -6,8 +8,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Channel {
     private String name;
-    private Vector<User> users = new Vector<>();
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Vector<User> users = new Vector<>();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public Channel(String name) {
         this.name = name;
@@ -35,7 +37,6 @@ public class Channel {
      * @param ignoredUser Name of a user that will not be broadcast to. Typically sender.
      */
     public void broadcast(String msg, String ignoredUser) {
-        System.out.println("Before Channel Broadcast; " + name + "; " + msg);
         for (User user : users) {
             if (ignoredUser == null || !user.getName().equals(ignoredUser)){
                 user.broadcastMessage(msg);
@@ -49,6 +50,15 @@ public class Channel {
             temp.add(user.getName());
         }
         return temp;
+    }
+
+    public void setName(String name){
+        lock.writeLock().lock();
+        try{
+            this.name = name;
+        }finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public String getName() {

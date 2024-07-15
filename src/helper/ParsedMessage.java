@@ -1,3 +1,5 @@
+package helper;
+
 import java.util.ArrayList;
 
 public record ParsedMessage(String target, String command, ArrayList<String> params, String trailing) {

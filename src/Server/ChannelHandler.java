@@ -1,3 +1,5 @@
+package Server;
+
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,8 +28,7 @@ public class ChannelHandler {
      * @param user the user
      */
     public void removeUser(User user){
-        for(String string : channels.keySet()){
-            Channel channel = channels.get(string);
+        for(Channel channel : channels.values()){
             channel.remove(user);
         }
     }

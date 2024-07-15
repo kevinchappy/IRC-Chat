@@ -1,3 +1,5 @@
+package helper;
+
 import java.util.StringJoiner;
 
 public class ResponseBuilder {
@@ -11,15 +13,15 @@ public class ResponseBuilder {
     }
 
 
-    public String build(int code) {
+    public String build(String code) {
         return build(code, null, null);
     }
 
-    public String build(int code, String[] params) {
+    public String build(String code, String[] params) {
         return build(code, params, null);
     }
 
-    public String build(int code, String[] params, String trailing) {
+    public String build(String code, String[] params, String trailing) {
         StringBuilder sb = new StringBuilder();
         sb.append(code).append(DELIMITER);
 
@@ -36,11 +38,11 @@ public class ResponseBuilder {
             sb.append(trailing);
         }
 
-        if(sb.charAt(sb.length() - 1) == DELIMITER){
+        if (sb.charAt(sb.length() - 1) == DELIMITER) {
             sb.setLength(sb.length() - 1);
         }
 
-        sb.append("\r\n");
+        sb.append("\\r\\n");
         return sb.toString();
     }
 }

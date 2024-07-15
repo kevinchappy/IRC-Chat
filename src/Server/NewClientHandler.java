@@ -1,3 +1,5 @@
+package Server;
+
 import java.io.IOException;
 
 import java.net.ServerSocket;
@@ -12,8 +14,8 @@ public class NewClientHandler implements Runnable {
     /**
      * Thread for accepting new clients to server
      * New user is given default name Guest
-     * User is added to userlist
-     * New ClientHandler thread is spawned for specific user
+     * Server.User is added to userlist
+     * New Server.ClientHandler thread is spawned for specific user
      */
     @Override
     public void run() {

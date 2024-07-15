@@ -1,3 +1,5 @@
+package helper;
+
 /**
  * Defines constants of message codes that are received when accepting messages from users.
  */
