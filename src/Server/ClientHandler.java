@@ -48,11 +48,10 @@ public class ClientHandler implements Runnable {
             in.close();
             user.close();
             handleExit(user);
-            ircServer.removeUser(user);
 
         } catch (IOException e) {
             handleExit(user);
-            ircServer.removeUser(user);
+
 
         }
     }
@@ -234,7 +233,6 @@ public class ClientHandler implements Runnable {
 
                 channel.broadcast(MessageBuilder.build(ResponseCodes.CHANNEL_MSG,
                         new String[]{dateFormat.format(LocalDateTime.now()), user.getName(), channel.getName()}, msg.trailing()), null);
-                //user.broadcastMessage(responseBuilder.build(ResponseCodes.MESSAGE_SENT));
 
             } else if ((target = ircServer.getUserByName(param)) != null && !target.getName().equalsIgnoreCase("guest")) {
 
@@ -249,9 +247,9 @@ public class ClientHandler implements Runnable {
     }
 
     private void handleExit(User user){
-        for (Channel channel : user.getChannels()){
-            channel.broadcast(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}), user.getName());
+        ircServer.removeUser(user);
+        for (User toSend : ircServer.getUsers()){
+            toSend.broadcastMessage(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}));
         }
     }
-
 }

@@ -64,7 +64,7 @@ public class ClientGUI {
     public void printMessage(String trailing, String channelName, String userName, String timeAndDate) {
         ClientChannel ch = getChannelByName(channelName);
         if (ch != null) {
-            String msg = timeAndDate + " : " + userName + trailing + "\n";
+            String msg = timeAndDate + " : " + userName + " " +trailing + "\n";
             ch.addMessage(msg);
             if (selectedChannel != null && selectedChannel.compareName(channelName)) {
                 messageArea.append(msg);
