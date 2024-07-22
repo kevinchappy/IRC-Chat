@@ -12,11 +12,9 @@ import java.util.*;
 public class ClientHandler implements Runnable {
     private final User user;
     private final IRCServer ircServer;
-    private final MessageParser parser = new MessageParser();
-    private final ResponseBuilder responseBuilder = new ResponseBuilder();
     private final ChannelHandler ch;
-    private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd-HH:mm:ss");
-
+    private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private boolean isAlive = true;
     ClientHandler(User user, IRCServer ircServer) {
         this.user = user;
         this.ircServer = ircServer;
@@ -28,25 +26,34 @@ public class ClientHandler implements Runnable {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(user.getInput()));
 
-            user.broadcastMessage(responseBuilder.build(ResponseCodes.JOINED_SERVER, new String[]{}, "Welcome to the server!"));
+            ArrayList<String> userNames = new ArrayList<>();
+            for (User user : ircServer.getUsers()){
+                userNames.add(user.getName());
+            }
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.JOINED_SERVER, userNames.toArray(new String[0]), "Welcome to the server!"));
+
 
             String msg;
-            while ((msg = in.readLine()) != null && ircServer.isAlive()) {
-                ParsedMessage parsedMessage = parser.parse(msg);
+            while ((msg = in.readLine()) != null && isAlive) {
+                ParsedMessage parsedMessage = MessageParser.parse(msg);
                 if (parsedMessage != null) {
                     if (!user.getName().equalsIgnoreCase("guest") ||
                             parsedMessage.command().equalsIgnoreCase(MessageCodes.NICKNAME)) {
                         handleMessage(parsedMessage, user);
                     } else {
-                        user.broadcastMessage(responseBuilder.build(ResponseCodes.NO_USER_NAME));
+                        user.broadcastMessage(MessageBuilder.build(ResponseCodes.NO_USER_NAME));
                     }
                 }
             }
             in.close();
             user.close();
+            handleExit(user);
             ircServer.removeUser(user);
+
         } catch (IOException e) {
+            handleExit(user);
             ircServer.removeUser(user);
+
         }
     }
 
@@ -92,8 +99,11 @@ public class ClientHandler implements Runnable {
             case MessageCodes.CHANNELS:
                 handleChannel(user);
                 break;
+            case MessageCodes.EXIT:
+                isAlive = false;
+                break;
             default:
-                user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_INVALID_MESSAGE));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_INVALID_MESSAGE));
         }
     }
 
@@ -106,9 +116,9 @@ public class ClientHandler implements Runnable {
         }
 
         if (!names.isEmpty()) {
-            user.broadcastMessage(responseBuilder.build(ResponseCodes.NAME_LIST, names.toArray(new String[0])));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.NAME_LIST, names.toArray(new String[0])));
         } else {
-            user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_NO_AVAILABLE_NAMES));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_AVAILABLE_NAMES));
         }
     }
 
@@ -122,57 +132,57 @@ public class ClientHandler implements Runnable {
             names.add(name);
         }
 
-        user.broadcastMessage(responseBuilder.build(ResponseCodes.CHANNEL_NAMES, names.toArray(new String[0])));
+        user.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANNEL_NAMES, names.toArray(new String[0])));
 
     }
 
     private void handleNickname(ParsedMessage msg, User user) {
         if (!msg.params().isEmpty()) {
             String oldName = user.getName();
+            user.lock();
+
             String newName = msg.params().getFirst();
             if (newName.length() >= 3 && newName.length() <= 12 && !newName.contains("#") &&
                     !newName.contains(":") && !newName.contains(" ") && !newName.equalsIgnoreCase("guest") &&
                     ircServer.getUserByName(newName) == null) {
 
                 user.setName(newName);
-                for (Channel channel : user.getChannels()) {
-                    channel.broadcast(responseBuilder.build(ResponseCodes.CHANGED_NAME, new String[]{oldName, newName}), user.getName());
+                for (User sendTo : ircServer.getUsers()){
+
+                    sendTo.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANGED_NAME, new String[]{oldName, newName}));
+
                 }
-                user.broadcastMessage(responseBuilder.build(ResponseCodes.NAME_SUCCESS, new String[]{newName}));
+
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.NAME_SUCCESS, new String[]{newName}));
 
             } else {
-                user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_INVALID_NAME));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_INVALID_NAME));
             }
+            user.unlock();
         }
     }
 
     private void handlePart(ParsedMessage msg, User user) {
-        ArrayList<Channel> leftChannels = new ArrayList<>();
 
-        for (String param : msg.params()) {
-            if (param.startsWith("#")) {
-                Channel channel = ch.getChannel(param);
-                if (channel != null) {
-                    channel.remove(user);
-                    user.removeChannel(channel);
-                    leftChannels.add(channel);
-                    if (channel.isEmpty()) {
-                        ch.removeChannel(channel.getName());
-                    }
-                }
+        String channelName = msg.params().getFirst();
+        Channel channel = ch.getChannel(channelName);
+
+        if (channel != null) {
+            channel.remove(user);
+            user.removeChannel(channel);
+            if (channel.isEmpty()) {
+                ch.removeChannel(channel.getName());
+            } else {
+                channel.broadcast(MessageBuilder.build(ResponseCodes.USER_LEFT_CHANNEL,
+                        new String[]{channelName, user.getName()}), null);
             }
-        }
 
-        if (leftChannels.isEmpty()) {
-            user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_NO_SUCH_CHANNEL));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.LEFT_CHANNELS, new String[]{channelName}));
+
         } else {
-            ArrayList<String> leftChannelNames = new ArrayList<>();
-            for (Channel leftChannel : leftChannels) {
-                leftChannel.broadcast(responseBuilder.build(ResponseCodes.USER_LEFT_CHANNEL, new String[]{leftChannel.getName(), user.getName()}), null);
-                leftChannelNames.add(leftChannel.getName());
-            }
-            user.broadcastMessage(responseBuilder.build(ResponseCodes.LEFT_CHANNELS, leftChannelNames.toArray(new String[0])));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_SUCH_CHANNEL));
         }
+
 
     }
 
@@ -188,22 +198,22 @@ public class ClientHandler implements Runnable {
 
                 channel.add(user);
                 user.addChannel(channel);
-                channel.broadcast(responseBuilder.build(ResponseCodes.USER_JOINED_CHANNEL,
+                channel.broadcast(MessageBuilder.build(ResponseCodes.USER_JOINED_CHANNEL,
                         new String[]{channel.getName(), user.getName()}, null), user.getName());
 
                 ArrayList<String> joinedChannelMessage = new ArrayList<>();
                 joinedChannelMessage.add(channel.getName());
                 joinedChannelMessage.addAll(channel.getUserNames());
-                user.broadcastMessage(responseBuilder.build(ResponseCodes.JOINED_CHANNEL, joinedChannelMessage.toArray(new String[0])));
-            } else if(channel == null){
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.JOINED_CHANNEL, joinedChannelMessage.toArray(new String[0])));
+            } else if (channel == null) {
                 channel = new Channel(param);
                 ch.addChannels(channel);
                 channel.add(user);
                 user.addChannel(channel);
-                user.broadcastMessage(responseBuilder.build(ResponseCodes.CREATED_CHANNEL, new String[]{channel.getName(), user.getName()}));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.CREATED_CHANNEL, new String[]{channel.getName(), user.getName()}));
             }
         } else {
-            user.broadcastMessage(responseBuilder.build(ResponseCodes.INVALID_CHANNEL_NAME));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.INVALID_CHANNEL_NAME));
         }
 
     }
@@ -217,25 +227,30 @@ public class ClientHandler implements Runnable {
     private void handleSendMessage(ParsedMessage msg, User user) {
         //Ignore message if no body
         if (msg.trailing() != null) {
-            // ArrayList<String> unableToSend = new ArrayList<>();
             String param = msg.params().getFirst();
             User target;
             Channel channel;
             if ((channel = ch.getChannel(param)) != null && user.getChannels().contains(ch.getChannel(param))) {
 
-                channel.broadcast(responseBuilder.build(ResponseCodes.CHANNEL_MSG,
-                        new String[]{dateFormat.format(LocalDateTime.now()), user.getName(), channel.getName()}, msg.trailing()),null);
+                channel.broadcast(MessageBuilder.build(ResponseCodes.CHANNEL_MSG,
+                        new String[]{dateFormat.format(LocalDateTime.now()), user.getName(), channel.getName()}, msg.trailing()), null);
                 //user.broadcastMessage(responseBuilder.build(ResponseCodes.MESSAGE_SENT));
 
             } else if ((target = ircServer.getUserByName(param)) != null && !target.getName().equalsIgnoreCase("guest")) {
 
-                target.broadcastMessage(responseBuilder.build(ResponseCodes.USER_MSG,
+                target.broadcastMessage(MessageBuilder.build(ResponseCodes.USER_MSG,
                         new String[]{dateFormat.format(LocalDateTime.now()), user.getName()}, msg.trailing()));
-                user.broadcastMessage(responseBuilder.build(ResponseCodes.MESSAGE_SENT));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.MESSAGE_SENT));
 
             } else {
-                user.broadcastMessage(responseBuilder.build(ResponseCodes.ERR_NO_RECIPIENT));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_RECIPIENT));
             }
+        }
+    }
+
+    private void handleExit(User user){
+        for (Channel channel : user.getChannels()){
+            channel.broadcast(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}), user.getName());
         }
     }
 

@@ -1,6 +1,5 @@
 package Client;
 
-import helper.MessageParser;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -10,10 +9,7 @@ public class Client {
 
     public static final String DEFAULT_PORT = "6667";
 
-    private Socket socket;
-    private boolean active = true;
-    private JoinGUI joinGUI;
-    private MessageParser parser;
+    private final JoinGUI joinGUI;
 
     public static void main(String[] args) {
         new Client();
@@ -24,9 +20,9 @@ public class Client {
         joinGUI.show();
     }
 
-    public void initiateConnection(String ip, int port){
+    public void initiateConnection(String address, int port){
         try{
-            socket = new Socket(ip, port);
+            Socket socket = new Socket(address, port);
             joinGUI.dispose();
 
             ClientGUI clientGUI = new ClientGUI(socket);

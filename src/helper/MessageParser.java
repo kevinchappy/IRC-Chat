@@ -3,21 +3,9 @@ package helper;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MessageParser {
+public final class MessageParser {
 
-
-    private final String delimiter = " ";
-    /*public static void main(String[] args) {
-        helper.MessageParser parser = new helper.MessageParser();
-
-
-        System.out.println(parser.parse(":Angel PRIVMSG Wiz :Hello are you receiving this message?\r\n"));
-
-    }*/
-
-
-    public MessageParser() {
-    }
+    public static final String delimiter = " ";
 
 
     /**
@@ -28,7 +16,7 @@ public class MessageParser {
      *
      * @param rawMessage Raw message to be parsed
      */
-    public ParsedMessage parse(String rawMessage) {
+    public static ParsedMessage parse(String rawMessage) {
         String prefix = null;
         String command;
         ArrayList<String> params = new ArrayList<>();

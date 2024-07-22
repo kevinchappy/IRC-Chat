@@ -37,9 +37,7 @@ public class User {
     }
 
     public void setName(String name) {
-        lock.writeLock().lock();
         this.name = name;
-        lock.writeLock().unlock();
     }
 
     public void addChannel(Channel channel){
@@ -56,6 +54,14 @@ public class User {
 
     public InputStream getInput() {
         return input;
+    }
+
+    public void lock(){
+        lock.writeLock().lock();
+    }
+
+    public void unlock(){
+        lock.writeLock().unlock();
     }
 
 
@@ -90,5 +96,10 @@ public class User {
     @Override
     public int hashCode() {
         return name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

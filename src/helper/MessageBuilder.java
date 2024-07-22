@@ -1,27 +1,19 @@
 package helper;
 
-import java.util.StringJoiner;
-
-public class ResponseBuilder {
+public final class MessageBuilder {
 
 
     public static final char DELIMITER = ' ';
 
-
-    public ResponseBuilder() {
-
-    }
-
-
-    public String build(String code) {
+    public static String build(String code) {
         return build(code, null, null);
     }
 
-    public String build(String code, String[] params) {
+    public static String build(String code, String[] params) {
         return build(code, params, null);
     }
 
-    public String build(String code, String[] params, String trailing) {
+    public static String build(String code, String[] params, String trailing) {
         StringBuilder sb = new StringBuilder();
         sb.append(code).append(DELIMITER);
 

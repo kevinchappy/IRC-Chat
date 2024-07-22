@@ -1,8 +1,7 @@
 package Client;
 
-import Server.Channel;
 import helper.MessageCodes;
-import helper.ResponseBuilder;
+import helper.MessageBuilder;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -11,7 +10,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientGUI {
     private final JFrame frame;
@@ -20,13 +20,12 @@ public class ClientGUI {
     private JPanel panel1;
     private JTextField messageTextField;
     private JButton sendButton;
-    private JList userList;
-    private JList channelList;
+    private JList<String> userList;
+    private JList<ClientChannel> channelList;
     private JButton addChannelButton;
-    private ResponseBuilder responseBuilder = new ResponseBuilder();
-    private DefaultListModel<ClientChannel> channelListModel = new DefaultListModel<>();
-    //private DefaultListModel<String> userListModel = new DefaultListModel<>();
+    private final DefaultListModel<ClientChannel> channelListModel = new DefaultListModel<>();
     private ClientChannel selectedChannel;
+    private final HashSet<String> allUsers = new HashSet<>();
 
 
     public ClientGUI(Socket socket) {
@@ -40,14 +39,7 @@ public class ClientGUI {
 
         setListeners();
 
-
-        //channelListModel.addElement(new ClientChannel("#anime"));
-        //channelListModel.addElement(new ClientChannel("#main"));
-
-
         channelList.setModel(channelListModel);
-        //userList.setModel(userListModel);
-
 
         frame = new JFrame("IRC Client");
         frame.setContentPane(this.panel1);
@@ -71,17 +63,14 @@ public class ClientGUI {
 
     public void printMessage(String trailing, String channelName, String userName, String timeAndDate) {
         ClientChannel ch = getChannelByName(channelName);
-        System.out.println (channelName + " : ");
-        System.out.println(ch);
         if (ch != null) {
-            String msg = userName + " " + timeAndDate + " " + trailing+ "\n";
+            String msg = timeAndDate + " : " + userName + trailing + "\n";
             ch.addMessage(msg);
-            if (selectedChannel.compareName(channelName)) {
+            if (selectedChannel != null && selectedChannel.compareName(channelName)) {
                 messageArea.append(msg);
             }
         }
     }
-
 
 
     private void setListeners() {
@@ -103,11 +92,11 @@ public class ClientGUI {
 
         channelList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                ClientChannel ch = (ClientChannel) channelList.getSelectedValue();
+                ClientChannel ch = channelList.getSelectedValue();
                 if (ch != null) {
                     userList.setModel(ch.getUsersListModel());
                     messageArea.setText("");
-                    for (String message : ch.getMessages()){
+                    for (String message : ch.getMessages()) {
                         messageArea.append(message);
                     }
                 }
@@ -127,7 +116,6 @@ public class ClientGUI {
             } else {
                 handleSendMessage(rawString);
             }
-
         }
     }
 
@@ -135,7 +123,9 @@ public class ClientGUI {
         for (int i = 0; i < channelListModel.size(); i++) {
             ClientChannel ch = channelListModel.get(i);
             if (ch.compareName(channelName)) {
+                allUsers.add(userName);
                 ch.addUser(userName);
+                printMessage(" joined the channel", channelName, userName, "");
                 return;
             }
         }
@@ -146,62 +136,59 @@ public class ClientGUI {
             ClientChannel ch = channelListModel.get(i);
             if (ch.compareName(channelName)) {
                 ch.removeUser(userName);
+                printMessage(" left the channel", channelName, userName, "");
                 return;
             }
         }
     }
 
-    public void removeUser(String s) {
-        for (int i = 0; i < channelListModel.size(); i++) {
+    public void removeUser(String userName){
+        for (int i = 0; i < channelListModel.size(); i++){
             ClientChannel ch = channelListModel.get(i);
-            ch.removeUser(s);
+            if (ch.removeUser(userName)){
+                printMessage(" left the channel", ch.toString(), userName, "");
+            }
         }
+        allUsers.remove(userName);
     }
+
 
     public void removeChannel(String s) {
         for (int i = 0; i < channelListModel.size(); i++) {
             ClientChannel ch = channelListModel.get(i);
             if (ch.compareName(s)) {
                 channelListModel.remove(i);
+                userList.setModel(new DefaultListModel<>());
                 return;
             }
         }
     }
 
     public void addChannel(String name, List<String> users) {
-        channelListModel.addElement(new ClientChannel(name, users));
+        ArrayList<String> userList = new ArrayList<>();
+        for (String userName : users) {
+            allUsers.add(userName);
+            userList.add(userName);
+        }
+        channelListModel.addElement(new ClientChannel(name, userList));
     }
 
-    private void handleCommand(String command, String msg) {
-        String formattedMessage = null;
-        switch (command) {
-            case "/join":
-                System.out.println("join");
-                formattedMessage = responseBuilder.build(MessageCodes.JOIN, new String[]{msg});
-                break;
-
-            case "/leave":
-                formattedMessage = responseBuilder.build(MessageCodes.PART, new String[]{msg});
-                break;
-
-            case "/nick":
-                formattedMessage = responseBuilder.build(MessageCodes.NICKNAME, new String[]{msg});
-                break;
-
-            default:
-                break;
-        }
-        if (formattedMessage != null) {
-            System.out.println("sending: " + formattedMessage);
-            writer.println(formattedMessage);
+    public void handleNameChange(String oldName, String newName) {
+        if (allUsers.contains(oldName)) {
+            allUsers.remove(oldName);
+            allUsers.add(newName);
+            for (int i = 0; i < channelListModel.size(); i++) {
+                channelListModel.get(i).updateUser(oldName, newName);
+            }
         }
     }
+
+
 
     private void handleSendMessage(String msg) {
         if (selectedChannel != null) {
-            String formattedMessage = responseBuilder.build(MessageCodes.MESSAGE,
+            String formattedMessage = MessageBuilder.build(MessageCodes.MESSAGE,
                     new String[]{selectedChannel.toString()}, msg);
-            System.out.println("sending message: " + formattedMessage);
             writer.println(formattedMessage);
         }
     }
@@ -213,5 +200,32 @@ public class ClientGUI {
             }
         }
         return null;
+    }
+
+    private void handleCommand(String command, String msg) {
+        String formattedMessage = null;
+        switch (command) {
+            case "/join":
+                formattedMessage = MessageBuilder.build(MessageCodes.JOIN, new String[]{msg});
+                break;
+
+            case "/leave":
+                formattedMessage = MessageBuilder.build(MessageCodes.PART, new String[]{msg});
+
+                break;
+
+            case "/nick":
+                formattedMessage = MessageBuilder.build(MessageCodes.NICKNAME, new String[]{msg});
+                break;
+
+            case "/exit":
+                formattedMessage = MessageBuilder.build(MessageCodes.EXIT);
+
+            default:
+                break;
+        }
+        if (formattedMessage != null) {
+            writer.println(formattedMessage);
+        }
     }
 }

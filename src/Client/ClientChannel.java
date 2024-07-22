@@ -2,7 +2,6 @@ package Client;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ClientChannel {
@@ -10,11 +9,12 @@ public class ClientChannel {
     private DefaultListModel<String> usersListModel;
     private ArrayList<String> messages = new ArrayList<>();
 
-    public ClientChannel(String name, List<String> arr){
+    public ClientChannel(String name, List<String> arr) {
         this.name = name;
         this.usersListModel = new DefaultListModel<>();
-        synchronized (this){
-        this.usersListModel.addAll(arr);
+
+        synchronized (this) {
+            this.usersListModel.addAll(arr);
         }
     }
 
@@ -27,36 +27,49 @@ public class ClientChannel {
         return messages;
     }
 
+
+    public synchronized void addUser(String name) {
+        usersListModel.addElement(name);
+    }
+
+    public synchronized boolean removeUser(String name) {
+        return usersListModel.removeElement(name);
+    }
+
+    public synchronized void updateUser(String oldName, String newName) {
+        int index = usersListModel.indexOf(oldName);
+        if (index != -1) {
+            System.out.println(usersListModel.get(index));
+            usersListModel.setElementAt(newName, index);
+            System.out.println(usersListModel.get(index) + "\n");
+
+        }
+    }
+
+    public boolean compareName(String name) {
+        return this.name.equals(name);
+    }
+
+    public void addMessage(String msg) {
+        messages.add(msg);
+    }
+
+    public void updateList() {
+
+    }
+
     @Override
     public String toString() {
         return name;
     }
 
-    public synchronized void addUser(String name){
-        usersListModel.addElement(name);
-    }
-
-    public synchronized void removeUser(String name){
-        usersListModel.removeElement(name);
-    }
-
-    public boolean compareName(String name){
-        return this.name.equals(name);
-    }
-
-
-
-    public void addMessage(String msg){
-        messages.add(msg);
-    }
-
     @Override
     public boolean equals(Object obj) {
-        if (obj == this){
+        if (obj == this) {
             return true;
         }
 
-        if (!(obj instanceof ClientChannel ch)){
+        if (!(obj instanceof ClientChannel ch)) {
             return false;
         }
 

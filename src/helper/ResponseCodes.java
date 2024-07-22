@@ -25,6 +25,7 @@ public class ResponseCodes{
     public static final String NAME_LIST = "18";
     public static final String ERR_NO_AVAILABLE_NAMES = "19";
     public static final String CHANNEL_NAMES = "20";
+    public static final String USER_EXIT = "21";
 
 
 }
