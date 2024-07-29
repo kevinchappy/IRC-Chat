@@ -13,8 +13,8 @@ public class NewClientHandler implements Runnable {
 
     /**
      * Thread for accepting new clients to server
-     * New user is given default name Guest
-     * Server.User is added to userlist
+     * New user is given default name guest
+     * user is added to ircServer.userList
      * New Server.ClientHandler thread is spawned for specific user
      */
     @Override
@@ -23,7 +23,7 @@ public class NewClientHandler implements Runnable {
             while (ircServer.isAlive()) {
                 try {
                     Socket socket = server.accept();
-                    User user = new User(socket, "Guest");
+                    User user = new User(socket, "guest");
                     ircServer.getUsers().add(user);
                     Runnable clientHandler = new ClientHandler(user, ircServer);
                     IRCServer.EXECUTOR.submit(clientHandler);

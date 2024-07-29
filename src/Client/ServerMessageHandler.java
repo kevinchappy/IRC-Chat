@@ -5,28 +5,27 @@ import helper.ParsedMessage;
 import helper.ResponseCodes;
 
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 
 public class ServerMessageHandler implements Runnable {
 
-    private final Socket socket;
     private final ClientGUI client;
-    private BufferedReader reader;
+    private final UserList userList;
+    private final ChannelList channelList;
+    private final BufferedReader reader;
+    private final Socket socket;
 
-    public ServerMessageHandler(Socket socket, ClientGUI client) {
-        this.socket = socket;
+    public ServerMessageHandler(Socket socket, BufferedReader reader, ClientGUI client, UserList userList, ChannelList channelList) {
+        this.reader = reader;
         this.client = client;
+        this.userList = userList;
+        this.channelList = channelList;
+        this.socket = socket;
 
-        try {
-            this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
     }
 
@@ -40,7 +39,6 @@ public class ServerMessageHandler implements Runnable {
                 handleMessage(parsedMessage);
 
             } catch (IOException e) {
-                e.printStackTrace();
                 kill();
                 break;
             }
@@ -49,28 +47,53 @@ public class ServerMessageHandler implements Runnable {
 
     public void kill() {
         try {
-            reader.close();
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        client.dispose();
+        userList.dispose();
+        channelList.dispose();
+
+        new Client();
+
     }
 
     private void handleMessage(ParsedMessage parsedMessage) {
         ArrayList<String> params = parsedMessage.params();
         String trailing = parsedMessage.trailing();
         String channelName;
+        String userName;
+        String timeAndDate;
+        System.out.println(parsedMessage);
         switch (parsedMessage.command()) {
             case ResponseCodes.CHANNEL_MSG:
                 channelName = params.get(2);
-                String userName = params.get(1);
-                String timeAndDate = params.get(0);
+                userName = params.get(1);
+                timeAndDate = params.get(0);
                 client.printMessage(trailing, channelName, userName, timeAndDate);
                 break;
+            case ResponseCodes.USER_MSG:
+                userName = params.get(1);
+                client.createChannelIfNotExists(userName);
+                timeAndDate = params.get(0);
+                client.printMessage(trailing, userName, userName, timeAndDate);
+                break;
+
+            case ResponseCodes.ESTABLISH_PRIVATE_RES:
+
+                channelName = params.getFirst();
+                if (!client.channelExists(channelName)) {
+                    params.add(client.getName());
+                    client.addChannel(channelName, params, true);
+                }
+                break;
+
 
             case ResponseCodes.JOINED_CHANNEL:
                 channelName = params.removeFirst();
-                client.addChannel(channelName, params);
+                client.addChannel(channelName, params, false);
                 break;
 
             case ResponseCodes.LEFT_CHANNELS:
@@ -82,11 +105,13 @@ public class ServerMessageHandler implements Runnable {
                 channelName = params.removeFirst();
                 ArrayList<String> list = new ArrayList<>();
                 list.add(params.getFirst());
-                client.addChannel(channelName, list);
+                client.addChannel(channelName, list, false);
                 break;
 
             case ResponseCodes.NAME_SUCCESS:
-                JOptionPane.showMessageDialog(new JFrame(), "Name changed to: " + params.getFirst());
+                userName = params.getFirst();
+                JOptionPane.showMessageDialog(new JFrame(), "Name changed to: " + userName);
+                client.setName(userName);
                 break;
 
             case ResponseCodes.USER_JOINED_CHANNEL:
@@ -112,6 +137,16 @@ public class ServerMessageHandler implements Runnable {
                 client.removeUser(name);
                 break;
 
+            case ResponseCodes.JOINED_SERVER:
+                client.setName(params.getFirst());
+                break;
+
+            case ResponseCodes.NAME_LIST:
+                userList.setList(params);
+                break;
+            case ResponseCodes.CHANNEL_NAMES:
+                channelList.setList(params);
+                break;
             default:
                 break;
         }

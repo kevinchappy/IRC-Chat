@@ -15,6 +15,7 @@ public class ClientHandler implements Runnable {
     private final ChannelHandler ch;
     private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
     private boolean isAlive = true;
+
     ClientHandler(User user, IRCServer ircServer) {
         this.user = user;
         this.ircServer = ircServer;
@@ -26,11 +27,11 @@ public class ClientHandler implements Runnable {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(user.getInput()));
 
-            ArrayList<String> userNames = new ArrayList<>();
+            /*ArrayList<String> userNames = new ArrayList<>();
             for (User user : ircServer.getUsers()){
                 userNames.add(user.getName());
-            }
-            user.broadcastMessage(MessageBuilder.build(ResponseCodes.JOINED_SERVER, userNames.toArray(new String[0]), "Welcome to the server!"));
+            }*/
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.JOINED_SERVER, new String[]{user.getName()}, "Welcome to the server!"));
 
 
             String msg;
@@ -98,6 +99,9 @@ public class ClientHandler implements Runnable {
             case MessageCodes.CHANNELS:
                 handleChannel(user);
                 break;
+            case MessageCodes.ESTABLISH_PRIVATE_CHAT:
+                handleEstablishPrivateChat(msg, user);
+                break;
             case MessageCodes.EXIT:
                 isAlive = false;
                 break;
@@ -106,12 +110,21 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    private void handleEstablishPrivateChat(ParsedMessage msg, User user) {
+        String target = msg.params().getFirst();
+
+        if (ircServer.userExists(target) && !target.equals(user.getName())) {
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ESTABLISH_PRIVATE_RES, new String[]{target}));
+        } else {
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_SUCH_USER, new String[]{target}));
+        }
+    }
+
     private void handleNames(User user) {
         ArrayList<String> names = new ArrayList<>();
 
-        for (Channel channel : user.getChannels()) {
-            names.add(channel.getName());
-            names.addAll(channel.getUserNames());
+        for (User toSend : ircServer.getUsers()){
+            names.add(toSend.getName());
         }
 
         if (!names.isEmpty()) {
@@ -146,7 +159,7 @@ public class ClientHandler implements Runnable {
                     ircServer.getUserByName(newName) == null) {
 
                 user.setName(newName);
-                for (User sendTo : ircServer.getUsers()){
+                for (User sendTo : ircServer.getUsers()) {
 
                     sendTo.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANGED_NAME, new String[]{oldName, newName}));
 
@@ -234,11 +247,11 @@ public class ClientHandler implements Runnable {
                 channel.broadcast(MessageBuilder.build(ResponseCodes.CHANNEL_MSG,
                         new String[]{dateFormat.format(LocalDateTime.now()), user.getName(), channel.getName()}, msg.trailing()), null);
 
-            } else if ((target = ircServer.getUserByName(param)) != null && !target.getName().equalsIgnoreCase("guest")) {
+            } else if ((target = ircServer.getUserByName(param)) != null && !target.getName().equalsIgnoreCase("guest") && !target.equals(user)) {
 
-                target.broadcastMessage(MessageBuilder.build(ResponseCodes.USER_MSG,
-                        new String[]{dateFormat.format(LocalDateTime.now()), user.getName()}, msg.trailing()));
-                user.broadcastMessage(MessageBuilder.build(ResponseCodes.MESSAGE_SENT));
+                String time = dateFormat.format(LocalDateTime.now());
+                target.broadcastMessage(MessageBuilder.build(ResponseCodes.USER_MSG, new String[]{time, user.getName()}, msg.trailing()));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANNEL_MSG, new String[]{time, user.getName(), target.getName()}, msg.trailing()));
 
             } else {
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_RECIPIENT));
@@ -246,10 +259,11 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void handleExit(User user){
+    private void handleExit(User user) {
         ircServer.removeUser(user);
-        for (User toSend : ircServer.getUsers()){
+        for (User toSend : ircServer.getUsers()) {
             toSend.broadcastMessage(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}));
         }
     }
+
 }

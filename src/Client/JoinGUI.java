@@ -12,11 +12,6 @@ public class JoinGUI {
     private JButton button1;
     private JPanel panel1;
 
-
-
-
-
-
     public JoinGUI(Client client){
         this.client = client;
         frame = new JFrame("Join");
@@ -27,8 +22,6 @@ public class JoinGUI {
         setButtonAction();
         setPortTextField();
     }
-
-
 
     private void setButtonAction(){
         button1.addActionListener(v ->{
@@ -59,9 +52,6 @@ public class JoinGUI {
         textField2.setTransferHandler(null);
         textField2.setText(Client.DEFAULT_PORT);
     }
-
-
-
 
     public void showErrorMessage(){
         JOptionPane.showMessageDialog(new JFrame(), "ERROR", "Dialog", JOptionPane.ERROR_MESSAGE);

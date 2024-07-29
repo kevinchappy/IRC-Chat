@@ -11,4 +11,5 @@ public class MessageCodes{
     public static final String NAMES = "NAMES";
     public static final String CHANNELS = "CHANNELS";
     public static final String EXIT = "EXIT";
+    public static final String ESTABLISH_PRIVATE_CHAT = "USREXISTS";
 }

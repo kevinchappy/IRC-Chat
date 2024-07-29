@@ -5,37 +5,34 @@ import helper.MessageBuilder;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientGUI {
+    private String name;
     private final JFrame frame;
-    private PrintWriter writer;
+    private final PrintWriter writer;
     private JTextArea messageArea;
     private JPanel panel1;
     private JTextField messageTextField;
     private JButton sendButton;
     private JList<String> userList;
     private JList<ClientChannel> channelList;
-    private JButton addChannelButton;
+    private JButton seeAllChannelsButton;
+    private JButton seeAllUsersButton;
+    private JScrollPane scrollPane;
     private final DefaultListModel<ClientChannel> channelListModel = new DefaultListModel<>();
     private ClientChannel selectedChannel;
-    private final HashSet<String> allUsers = new HashSet<>();
+    private final UserList allUserList;
+    private final ChannelList allChannelList;
 
 
-    public ClientGUI(Socket socket) {
+    public ClientGUI( UserList allUserList,ChannelList allChannelList,  PrintWriter writer) {
 
-        try {
-            this.writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),
-                    StandardCharsets.ISO_8859_1), true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.writer = writer;
+
+        this.allUserList = allUserList;
+        this.allChannelList = allChannelList;
 
         setListeners();
 
@@ -64,7 +61,7 @@ public class ClientGUI {
     public void printMessage(String trailing, String channelName, String userName, String timeAndDate) {
         ClientChannel ch = getChannelByName(channelName);
         if (ch != null) {
-            String msg = timeAndDate + " : " + userName + " " +trailing + "\n";
+            String msg = timeAndDate + " : " + userName + " " + trailing + "\n";
             ch.addMessage(msg);
             if (selectedChannel != null && selectedChannel.compareName(channelName)) {
                 messageArea.append(msg);
@@ -77,6 +74,14 @@ public class ClientGUI {
 
         sendButton.addActionListener(e -> {
             setButtonListener();
+        });
+
+        seeAllChannelsButton.addActionListener(e ->{
+            allChannelList.show();
+        });
+
+        seeAllUsersButton.addActionListener(e -> {
+            allUserList.show();
         });
 
         messageTextField.addActionListener(new AbstractAction() {
@@ -123,7 +128,6 @@ public class ClientGUI {
         for (int i = 0; i < channelListModel.size(); i++) {
             ClientChannel ch = channelListModel.get(i);
             if (ch.compareName(channelName)) {
-                allUsers.add(userName);
                 ch.addUser(userName);
                 printMessage(" joined the channel", channelName, userName, "");
                 return;
@@ -142,14 +146,13 @@ public class ClientGUI {
         }
     }
 
-    public void removeUser(String userName){
-        for (int i = 0; i < channelListModel.size(); i++){
+    public void removeUser(String userName) {
+        for (int i = 0; i < channelListModel.size(); i++) {
             ClientChannel ch = channelListModel.get(i);
-            if (ch.removeUser(userName)){
+            if (ch.removeUser(userName)) {
                 printMessage(" left the channel", ch.toString(), userName, "");
             }
         }
-        allUsers.remove(userName);
     }
 
 
@@ -164,31 +167,21 @@ public class ClientGUI {
         }
     }
 
-    public void addChannel(String name, List<String> users) {
-        ArrayList<String> userList = new ArrayList<>();
-        for (String userName : users) {
-            allUsers.add(userName);
-            userList.add(userName);
-        }
-        channelListModel.addElement(new ClientChannel(name, userList));
+    public void addChannel(String name, List<String> users, boolean isPrivateChannel) {
+        channelListModel.addElement(new ClientChannel(name, users, isPrivateChannel));
     }
 
     public void handleNameChange(String oldName, String newName) {
-        if (allUsers.contains(oldName)) {
-            allUsers.remove(oldName);
-            allUsers.add(newName);
-            for (int i = 0; i < channelListModel.size(); i++) {
-                channelListModel.get(i).updateUser(oldName, newName);
-            }
+
+        for (int i = 0; i < channelListModel.size(); i++) {
+            channelListModel.get(i).updateUser(oldName, newName);
+
         }
     }
 
-
-
     private void handleSendMessage(String msg) {
         if (selectedChannel != null) {
-            String formattedMessage = MessageBuilder.build(MessageCodes.MESSAGE,
-                    new String[]{selectedChannel.toString()}, msg);
+            String formattedMessage = MessageBuilder.build(MessageCodes.MESSAGE, new String[]{selectedChannel.toString()}, msg);
             writer.println(formattedMessage);
         }
     }
@@ -211,7 +204,6 @@ public class ClientGUI {
 
             case "/leave":
                 formattedMessage = MessageBuilder.build(MessageCodes.PART, new String[]{msg});
-
                 break;
 
             case "/nick":
@@ -220,12 +212,39 @@ public class ClientGUI {
 
             case "/exit":
                 formattedMessage = MessageBuilder.build(MessageCodes.EXIT);
-
-            default:
                 break;
+
+            case "/msg":
+                formattedMessage = MessageBuilder.build(MessageCodes.ESTABLISH_PRIVATE_CHAT, new String[]{msg});
+                break;
+            default:
+
         }
         if (formattedMessage != null) {
             writer.println(formattedMessage);
         }
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void createChannelIfNotExists(String userName) {
+        if (!channelExists(userName)) {
+            addChannel(userName, Arrays.asList(userName, this.name), true);
+        }
+    }
+
+    public boolean channelExists(String channelName) {
+        for (int i = 0; i < channelListModel.size(); i++) {
+            if (channelListModel.get(i).compareName(channelName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
