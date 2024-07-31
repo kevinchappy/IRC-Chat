@@ -7,19 +7,18 @@ import helper.ResponseCodes;
 import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 
 public class ServerMessageHandler implements Runnable {
 
-    private final ClientGUI client;
+    private final ClientGUIController client;
     private final UserList userList;
     private final ChannelList channelList;
     private final BufferedReader reader;
     private final Socket socket;
 
-    public ServerMessageHandler(Socket socket, BufferedReader reader, ClientGUI client, UserList userList, ChannelList channelList) {
+    public ServerMessageHandler(Socket socket, BufferedReader reader, ClientGUIController client, UserList userList, ChannelList channelList) {
         this.reader = reader;
         this.client = client;
         this.userList = userList;
@@ -36,7 +35,9 @@ public class ServerMessageHandler implements Runnable {
         while (true) {
             try {
                 parsedMessage = MessageParser.parse(reader.readLine());
-                handleMessage(parsedMessage);
+                if (parsedMessage != null) {
+                    handleMessage(parsedMessage);
+                }
 
             } catch (IOException e) {
                 kill();
@@ -56,8 +57,7 @@ public class ServerMessageHandler implements Runnable {
         userList.dispose();
         channelList.dispose();
 
-        new Client();
-
+        Client.main(new String[]{});
     }
 
     private void handleMessage(ParsedMessage parsedMessage) {
@@ -74,22 +74,21 @@ public class ServerMessageHandler implements Runnable {
                 timeAndDate = params.get(0);
                 client.printMessage(trailing, channelName, userName, timeAndDate);
                 break;
+
             case ResponseCodes.USER_MSG:
                 userName = params.get(1);
-                client.createChannelIfNotExists(userName);
+                client.createPrivateChannelIfNotExists(userName);
                 timeAndDate = params.get(0);
                 client.printMessage(trailing, userName, userName, timeAndDate);
                 break;
 
             case ResponseCodes.ESTABLISH_PRIVATE_RES:
-
                 channelName = params.getFirst();
                 if (!client.channelExists(channelName)) {
                     params.add(client.getName());
                     client.addChannel(channelName, params, true);
                 }
                 break;
-
 
             case ResponseCodes.JOINED_CHANNEL:
                 channelName = params.removeFirst();
@@ -144,10 +143,17 @@ public class ServerMessageHandler implements Runnable {
             case ResponseCodes.NAME_LIST:
                 userList.setList(params);
                 break;
+
             case ResponseCodes.CHANNEL_NAMES:
                 channelList.setList(params);
                 break;
+
             default:
+                String errorMessage = "";
+                if (parsedMessage.trailing() != null) {
+                    errorMessage = parsedMessage.trailing().substring(1);
+                }
+                JOptionPane.showMessageDialog(new JFrame(), "Error " + parsedMessage.command() + ": " + errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
                 break;
         }
     }

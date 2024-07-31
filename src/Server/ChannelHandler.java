@@ -1,52 +1,47 @@
 package Server;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Class that wraps a Concurrent hashmap with channel names as keys and channel as values.
+ * Provides some helpful methods
+ */
 public class ChannelHandler {
 
     private final ConcurrentHashMap<String, Channel> channels = new ConcurrentHashMap<>();
-    private final IRCServer ircServer;
 
-    public ChannelHandler(IRCServer ircServer){
-        this.ircServer = ircServer;
-
-    }
-
-
-    public boolean channelExists(String channelName){
-        return channels.containsKey(channelName);
-    }
-
-    public void addChannels(Channel channel){
+    public void addChannels(Channel channel) {
         channels.put(channel.getName(), channel);
     }
 
-    /**
-     * Remove user from all channels.
-     *
-     * @param user the user
-     */
-    public void removeUser(User user){
-        for(Channel channel : channels.values()){
-            channel.remove(user);
-        }
-    }
 
-
-    public void removeChannel(String name){
+    public void removeChannel(String name) {
         channels.remove(name);
     }
 
-    public Channel getChannel(String name){
+    public Channel getChannel(String name) {
         return channels.get(name);
     }
 
-
-    public Iterator<String> getKeyIterator(){
-        return channels.keySet().iterator();
+    public String[] getAllChannelNames(){
+        ArrayList<String> names = new ArrayList<>(channels.keySet());
+        return names.toArray(names.toArray(new String[0]));
     }
 
-
-
+    /**
+     * Remove user from all channels. Removes channel if it is empty after removing user
+     *
+     * @param user the user
+     */
+    public void removeUser(User user) {
+        for (Iterator<Channel> iter = channels.values().iterator(); iter.hasNext(); ) {
+            Channel channel = iter.next();
+            channel.remove(user);
+            if (channel.isEmpty()) {
+                iter.remove();
+            }
+        }
+    }
 }

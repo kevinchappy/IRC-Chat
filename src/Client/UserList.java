@@ -14,6 +14,7 @@ public class UserList {
         this.writer = writer;
         gui.setLeftButtonName("Private Message");
         gui.setRightButtonName("Refresh");
+        gui.setTitle("All Users");
 
         setButtonListeners();
     }

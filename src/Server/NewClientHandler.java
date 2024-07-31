@@ -6,9 +6,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class NewClientHandler implements Runnable {
-    private final IRCServer ircServer;
-    public NewClientHandler(IRCServer ircServer) {
-        this.ircServer = ircServer;
+    private final ChannelHandler channelHandler;
+    private final UserHandler userHandler;
+    public NewClientHandler(ChannelHandler channelHandler, UserHandler userHandler) {
+        this.channelHandler = channelHandler;
+        this.userHandler = userHandler;
     }
 
     /**
@@ -20,12 +22,12 @@ public class NewClientHandler implements Runnable {
     @Override
     public void run() {
         try (ServerSocket server = new ServerSocket(IRCServer.defaultPort)) {
-            while (ircServer.isAlive()) {
+            while (true) {
                 try {
                     Socket socket = server.accept();
                     User user = new User(socket, "guest");
-                    ircServer.getUsers().add(user);
-                    Runnable clientHandler = new ClientHandler(user, ircServer);
+                    userHandler.add(user);
+                    Runnable clientHandler = new ClientHandler(user, userHandler, channelHandler);
                     IRCServer.EXECUTOR.submit(clientHandler);
 
                 } catch (IOException ex) {

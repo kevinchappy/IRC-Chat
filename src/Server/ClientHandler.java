@@ -11,26 +11,21 @@ import java.util.*;
 
 public class ClientHandler implements Runnable {
     private final User user;
-    private final IRCServer ircServer;
-    private final ChannelHandler ch;
+    private final UserHandler ircServer;
+    private final ChannelHandler channelHandler;
     private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
     private boolean isAlive = true;
 
-    ClientHandler(User user, IRCServer ircServer) {
+    ClientHandler(User user, UserHandler ircServer, ChannelHandler channelHandler) {
         this.user = user;
         this.ircServer = ircServer;
-        this.ch = ircServer.getChannelHandler();
+        this.channelHandler = channelHandler;
     }
 
     @Override
     public void run() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(user.getInput()));
-
-            /*ArrayList<String> userNames = new ArrayList<>();
-            for (User user : ircServer.getUsers()){
-                userNames.add(user.getName());
-            }*/
             user.broadcastMessage(MessageBuilder.build(ResponseCodes.JOINED_SERVER, new String[]{user.getName()}, "Welcome to the server!"));
 
 
@@ -42,7 +37,7 @@ public class ClientHandler implements Runnable {
                             parsedMessage.command().equalsIgnoreCase(MessageCodes.NICKNAME)) {
                         handleMessage(parsedMessage, user);
                     } else {
-                        user.broadcastMessage(MessageBuilder.build(ResponseCodes.NO_USER_NAME));
+                        user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_USER_NAME, "Please provide a valid username before any other commands"));
                     }
                 }
             }
@@ -52,8 +47,6 @@ public class ClientHandler implements Runnable {
 
         } catch (IOException e) {
             handleExit(user);
-
-
         }
     }
 
@@ -106,7 +99,7 @@ public class ClientHandler implements Runnable {
                 isAlive = false;
                 break;
             default:
-                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_INVALID_MESSAGE));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_INVALID_MESSAGE, "Invalid message."));
         }
     }
 
@@ -116,36 +109,22 @@ public class ClientHandler implements Runnable {
         if (ircServer.userExists(target) && !target.equals(user.getName())) {
             user.broadcastMessage(MessageBuilder.build(ResponseCodes.ESTABLISH_PRIVATE_RES, new String[]{target}));
         } else {
-            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_SUCH_USER, new String[]{target}));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_SUCH_USER, target + " does not exist."));
         }
     }
 
     private void handleNames(User user) {
-        ArrayList<String> names = new ArrayList<>();
+        ArrayList<String> names = ircServer.getAllUserNames();
 
-        for (User toSend : ircServer.getUsers()){
-            names.add(toSend.getName());
-        }
-
-        if (!names.isEmpty()) {
-            user.broadcastMessage(MessageBuilder.build(ResponseCodes.NAME_LIST, names.toArray(new String[0])));
+        if (names.isEmpty()) {
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_AVAILABLE_NAMES, "No available names."));
         } else {
-            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_AVAILABLE_NAMES));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.NAME_LIST, names.toArray(new String[0])));
         }
     }
 
     private void handleChannel(User user) {
-        ArrayList<String> names = new ArrayList<>();
-
-        Iterator<String> iter = ch.getKeyIterator();
-
-        while (iter.hasNext()) {
-            String name = iter.next();
-            names.add(name);
-        }
-
-        user.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANNEL_NAMES, names.toArray(new String[0])));
-
+        user.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANNEL_NAMES, channelHandler.getAllChannelNames()));
     }
 
     private void handleNickname(ParsedMessage msg, User user) {
@@ -159,31 +138,27 @@ public class ClientHandler implements Runnable {
                     ircServer.getUserByName(newName) == null) {
 
                 user.setName(newName);
-                for (User sendTo : ircServer.getUsers()) {
 
-                    sendTo.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANGED_NAME, new String[]{oldName, newName}));
-
-                }
+                ircServer.broadCastToAllUsers(MessageBuilder.build(ResponseCodes.CHANGED_NAME, new String[]{oldName, newName}));
 
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.NAME_SUCCESS, new String[]{newName}));
 
             } else {
-                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_INVALID_NAME));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_INVALID_NAME, "Invalid name."));
             }
             user.unlock();
         }
     }
 
     private void handlePart(ParsedMessage msg, User user) {
-
         String channelName = msg.params().getFirst();
-        Channel channel = ch.getChannel(channelName);
+        Channel channel = channelHandler.getChannel(channelName);
 
         if (channel != null) {
             channel.remove(user);
             user.removeChannel(channel);
             if (channel.isEmpty()) {
-                ch.removeChannel(channel.getName());
+                channelHandler.removeChannel(channel.getName());
             } else {
                 channel.broadcast(MessageBuilder.build(ResponseCodes.USER_LEFT_CHANNEL,
                         new String[]{channelName, user.getName()}), null);
@@ -192,10 +167,8 @@ public class ClientHandler implements Runnable {
             user.broadcastMessage(MessageBuilder.build(ResponseCodes.LEFT_CHANNELS, new String[]{channelName}));
 
         } else {
-            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_SUCH_CHANNEL));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_SUCH_CHANNEL, "No such channel."));
         }
-
-
     }
 
     private void handleJoin(ParsedMessage msg, User user) {
@@ -204,7 +177,7 @@ public class ClientHandler implements Runnable {
         if (param.length() <= 50 && param.startsWith("#") && !param.substring(1).contains("#") &&
                 !param.substring(1).contains(" ")) {
 
-            Channel channel = ch.getChannel(param);
+            Channel channel = channelHandler.getChannel(param);
 
             if (channel != null && !channel.getUserNames().contains(user.getName())) {
 
@@ -219,7 +192,7 @@ public class ClientHandler implements Runnable {
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.JOINED_CHANNEL, joinedChannelMessage.toArray(new String[0])));
             } else if (channel == null) {
                 channel = new Channel(param);
-                ch.addChannels(channel);
+                channelHandler.addChannels(channel);
                 channel.add(user);
                 user.addChannel(channel);
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.CREATED_CHANNEL, new String[]{channel.getName(), user.getName()}));
@@ -242,7 +215,7 @@ public class ClientHandler implements Runnable {
             String param = msg.params().getFirst();
             User target;
             Channel channel;
-            if ((channel = ch.getChannel(param)) != null && user.getChannels().contains(ch.getChannel(param))) {
+            if ((channel = channelHandler.getChannel(param)) != null && user.getChannels().contains(channelHandler.getChannel(param))) {
 
                 channel.broadcast(MessageBuilder.build(ResponseCodes.CHANNEL_MSG,
                         new String[]{dateFormat.format(LocalDateTime.now()), user.getName(), channel.getName()}, msg.trailing()), null);
@@ -254,16 +227,13 @@ public class ClientHandler implements Runnable {
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANNEL_MSG, new String[]{time, user.getName(), target.getName()}, msg.trailing()));
 
             } else {
-                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_RECIPIENT));
+                user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_RECIPIENT, "Recipient does not exist."));
             }
         }
     }
 
     private void handleExit(User user) {
         ircServer.removeUser(user);
-        for (User toSend : ircServer.getUsers()) {
-            toSend.broadcastMessage(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}));
-        }
+        ircServer.broadCastToAllUsers(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}));
     }
-
 }

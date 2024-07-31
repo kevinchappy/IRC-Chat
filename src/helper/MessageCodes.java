@@ -1,7 +1,7 @@
 package helper;
 
 /**
- * Defines constants of message codes that are received when accepting messages from users.
+ * Defines constants of message codes from users to server.
  */
 public class MessageCodes{
     public static final String MESSAGE = "PRIVMSG";

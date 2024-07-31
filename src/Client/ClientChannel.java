@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientChannel {
-    private final String name;
-    private DefaultListModel<String> usersListModel;
-    private ArrayList<String> messages = new ArrayList<>();
+    private String name;
+    private final DefaultListModel<String> usersListModel;
+    private final ArrayList<String> messages = new ArrayList<>();
     private boolean privateChannel;
 
     public ClientChannel(String name, List<String> arr, boolean privateChannel) {
@@ -22,6 +22,14 @@ public class ClientChannel {
 
     public boolean isPrivateChannel(){
         return privateChannel;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public DefaultListModel<String> getUsersListModel() {
@@ -59,8 +67,8 @@ public class ClientChannel {
         messages.add(msg);
     }
 
-    public void updateList() {
-
+    public boolean hasNoMessages(){
+        return usersListModel.isEmpty();
     }
 
     @Override

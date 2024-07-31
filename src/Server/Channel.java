@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Channel {
-    private String name;
+    private final String name;
     private final Vector<User> users = new Vector<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -52,14 +52,6 @@ public class Channel {
         return temp;
     }
 
-    public void setName(String name){
-        lock.writeLock().lock();
-        try{
-            this.name = name;
-        }finally {
-            lock.writeLock().unlock();
-        }
-    }
 
     public String getName() {
         lock.readLock().lock();

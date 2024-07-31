@@ -1,7 +1,7 @@
 package helper;
 
 /**
- * Defines response codes for response messages to users.
+ * Defines response codes for response messages from server to users.
  */
 public class ResponseCodes{
     public static final String JOINED_SERVER = "0";
@@ -20,13 +20,10 @@ public class ResponseCodes{
     public static final String ERR_NO_RECIPIENT = "13";
     public static final String JOINED_CHANNEL = "14";
     public static final String CHANGED_NAME = "15";
-    public static final String NO_USER_NAME = "16";
-    public static final String MESSAGE_SENT = "17";
+    public static final String ERR_NO_USER_NAME = "16";
     public static final String NAME_LIST = "18";
     public static final String ERR_NO_AVAILABLE_NAMES = "19";
     public static final String CHANNEL_NAMES = "20";
     public static final String USER_EXIT = "21";
     public static final String ESTABLISH_PRIVATE_RES = "22";
-
-
 }

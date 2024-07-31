@@ -13,6 +13,10 @@ public final class MessageBuilder {
         return build(code, params, null);
     }
 
+    public static String build(String code, String trailing){
+        return build(code,null, trailing);
+    }
+
     public static String build(String code, String[] params, String trailing) {
         StringBuilder sb = new StringBuilder();
         sb.append(code).append(DELIMITER);

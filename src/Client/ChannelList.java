@@ -6,6 +6,9 @@ import helper.MessageCodes;
 import java.io.PrintWriter;
 import java.util.List;
 
+/**
+ * Class for displaying
+ */
 public class ChannelList {
     private final listGUI gui = new listGUI();
     private final PrintWriter writer;
@@ -14,6 +17,7 @@ public class ChannelList {
         this.writer = writer;
         gui.setLeftButtonName("Join");
         gui.setRightButtonName("Refresh");
+        gui.setTitle("All Channels");
 
         setButtonListeners();
     }

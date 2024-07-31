@@ -24,11 +24,12 @@ public class listGUI {
 
     }
 
+    public void setTitle(String title){
+        frame.setTitle(title);
+    }
+
     public void show(){
         frame.setVisible(true);
-    }
-    public void hide(){
-        frame.setVisible(false);
     }
 
     public void dispose(){
@@ -53,13 +54,6 @@ public class listGUI {
 
     public void setLeftButtonName(String str){
         leftButton.setText(str);
-    }
-
-    public void addItem(String str){
-        listModel.addElement(str);
-    }
-    public void removeItem(String str){
-        listModel.removeElement(str);
     }
 
     public void setList(List<String> list){
