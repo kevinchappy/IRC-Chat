@@ -198,7 +198,7 @@ public class ClientHandler implements Runnable {
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.CREATED_CHANNEL, new String[]{channel.getName(), user.getName()}));
             }
         } else {
-            user.broadcastMessage(MessageBuilder.build(ResponseCodes.INVALID_CHANNEL_NAME));
+            user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_INVALID_CHANNEL_NAME, "Invalid channel name."));
         }
 
     }

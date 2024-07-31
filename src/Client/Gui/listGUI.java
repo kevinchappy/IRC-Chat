@@ -1,4 +1,4 @@
-package Client;
+package Client.Gui;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;

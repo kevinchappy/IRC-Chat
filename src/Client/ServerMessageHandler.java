@@ -38,10 +38,10 @@ public class ServerMessageHandler implements Runnable {
                 if (parsedMessage != null) {
                     handleMessage(parsedMessage);
                 }
-
             } catch (IOException e) {
-                kill();
                 break;
+            }finally {
+                kill();
             }
         }
     }
@@ -85,14 +85,14 @@ public class ServerMessageHandler implements Runnable {
             case ResponseCodes.ESTABLISH_PRIVATE_RES:
                 channelName = params.getFirst();
                 if (!client.channelExists(channelName)) {
-                    params.add(client.getName());
-                    client.addChannel(channelName, params, true);
+                    params.add(client.getCurrentUserName());
+                    client.addChannel(channelName, params);
                 }
                 break;
 
             case ResponseCodes.JOINED_CHANNEL:
                 channelName = params.removeFirst();
-                client.addChannel(channelName, params, false);
+                client.addChannel(channelName, params);
                 break;
 
             case ResponseCodes.LEFT_CHANNELS:
@@ -104,13 +104,13 @@ public class ServerMessageHandler implements Runnable {
                 channelName = params.removeFirst();
                 ArrayList<String> list = new ArrayList<>();
                 list.add(params.getFirst());
-                client.addChannel(channelName, list, false);
+                client.addChannel(channelName, list);
                 break;
 
             case ResponseCodes.NAME_SUCCESS:
                 userName = params.getFirst();
                 JOptionPane.showMessageDialog(new JFrame(), "Name changed to: " + userName);
-                client.setName(userName);
+                client.setCurrentUserName(userName);
                 break;
 
             case ResponseCodes.USER_JOINED_CHANNEL:
@@ -137,7 +137,7 @@ public class ServerMessageHandler implements Runnable {
                 break;
 
             case ResponseCodes.JOINED_SERVER:
-                client.setName(params.getFirst());
+                client.setCurrentUserName(params.getFirst());
                 break;
 
             case ResponseCodes.NAME_LIST:

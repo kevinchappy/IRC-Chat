@@ -8,21 +8,16 @@ public class ClientChannel {
     private String name;
     private final DefaultListModel<String> usersListModel;
     private final ArrayList<String> messages = new ArrayList<>();
-    private boolean privateChannel;
 
-    public ClientChannel(String name, List<String> arr, boolean privateChannel) {
+    public ClientChannel(String name, List<String> arr) {
         this.name = name;
         this.usersListModel = new DefaultListModel<>();
-        this.privateChannel = privateChannel;
 
         synchronized (this) {
             this.usersListModel.addAll(arr);
         }
     }
 
-    public boolean isPrivateChannel(){
-        return privateChannel;
-    }
 
     public String getName() {
         return name;

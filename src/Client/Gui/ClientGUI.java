@@ -1,4 +1,6 @@
-package Client;
+package Client.Gui;
+
+import Client.ClientChannel;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;

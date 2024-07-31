@@ -1,5 +1,7 @@
 package Client;
 
+import Client.Gui.JoinGUI;
+
 import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -8,39 +10,26 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Class handles taking user input for initiating server connection.
- * Input is sent to an instance of Client to initiate connection
+ * Handles initiating connection to server and spawning server reading thread and all GUI components.
  */
-public class JoinGUI {
-    private final JFrame frame;
-    private JTextField textField1;
-    private JTextField textField2;
-    private JButton button1;
-    private JPanel panel1;
+public class JoinGUIController {
 
-    public JoinGUI(){
-        frame = new JFrame("Join");
-        frame.setContentPane(this.panel1);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setSize(400,250);
+    private final JoinGUI gui = new JoinGUI();
+
+    public JoinGUIController(){
         setButtonAction();
         setPortTextField();
     }
-
     public void show(){
-        frame.setVisible(true);
+        gui.show();
     }
 
-    /**
-     * Sets button action to initiate connection to server based on user input
-     */
     private void setButtonAction(){
-        button1.addActionListener(v ->{
-            String ip = textField1.getText();
+        gui.addButtonListener(v ->{
+            String ip = gui.getAdressText();
             int port = -1;
             try{
-            port = Integer.parseInt(textField2.getText());
+                port = Integer.parseInt(gui.getPortText());
             }catch (NumberFormatException e){
                 JOptionPane.showMessageDialog(new JFrame(), "Error: Port number wrong format", "Dialog", JOptionPane.ERROR_MESSAGE);
             }
@@ -54,18 +43,16 @@ public class JoinGUI {
      * Sets port textfield to only accept digits, not allow copy/paste and have a preset port
      */
     private void setPortTextField() {
-        textField2.addKeyListener(new KeyAdapter() {
+        gui.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
-                if(!Character.isDigit(c) || textField2.getText().length() > 4){
+                if(!Character.isDigit(c) || gui.getPortText().length() > 4){
                     e.consume();
                 }
             }
         });
-
-        textField2.setTransferHandler(null);
-        textField2.setText(Client.DEFAULT_PORT);
+        gui.setPortTextField(Client.DEFAULT_PORT);
     }
 
 
@@ -89,9 +76,8 @@ public class JoinGUI {
             ClientGUIController clientGUI = new ClientGUIController(userList, channelList, writer);
             Thread t = new Thread(new ServerMessageHandler(socket, reader, clientGUI, userList, channelList));
 
-
             t.start();
-            frame.dispose();
+            gui.dispose();
             clientGUI.show();
 
         } catch (IOException e) {

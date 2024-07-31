@@ -1,5 +1,6 @@
 package Client;
 
+import Client.Gui.ClientGUI;
 import helper.MessageBuilder;
 import helper.MessageCodes;
 
@@ -34,7 +35,11 @@ public class ClientGUIController {
                 break;
 
             case "/leave":
-                formattedMessage = MessageBuilder.build(MessageCodes.PART, new String[]{msg});
+                if (msg.startsWith("##dead##") || !msg.startsWith("#")){
+                    removeChannel(msg);
+                }else{
+                    formattedMessage = MessageBuilder.build(MessageCodes.PART, new String[]{msg});
+                }
                 break;
 
             case "/nick":
@@ -121,8 +126,8 @@ public class ClientGUIController {
         }
     }
 
-    public void addChannel(String name, List<String> users, boolean isPrivateChannel) {
-        gui.getChannelListModel().addElement(new ClientChannel(name, users, isPrivateChannel));
+    public void addChannel(String name, List<String> users) {
+        gui.getChannelListModel().addElement(new ClientChannel(name, users));
     }
 
     public void handleNameChange(String oldName, String newName) {
@@ -149,17 +154,17 @@ public class ClientGUIController {
         return null;
     }
 
-    public void setName(String name) {
+    public void setCurrentUserName(String name) {
         this.name = name;
     }
 
-    public String getName() {
+    public String getCurrentUserName() {
         return name;
     }
 
     public void createPrivateChannelIfNotExists(String userName) {
         if (!channelExists(userName)) {
-            addChannel(userName, Arrays.asList(userName, this.name), true);
+            addChannel(userName, Arrays.asList(userName, this.name));
         }
     }
 

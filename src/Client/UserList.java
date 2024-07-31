@@ -1,5 +1,6 @@
 package Client;
 
+import Client.Gui.listGUI;
 import helper.MessageBuilder;
 import helper.MessageCodes;
 
