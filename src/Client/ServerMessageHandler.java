@@ -49,9 +49,7 @@ public class ServerMessageHandler implements Runnable {
     public void kill() {
         try {
             socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException ignored){}
 
         client.dispose();
         userList.dispose();

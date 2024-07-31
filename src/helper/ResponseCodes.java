@@ -10,7 +10,7 @@ public class ResponseCodes{
     public static final String ERR_NO_SUCH_USER = "2";
     public static final String ERR_NO_SUCH_CHANNEL = "3";
     public static final String ERR_INVALID_NAME = "4";
-    public static final String INVALID_CHANNEL_NAME = "5";
+    public static final String ERR_INVALID_CHANNEL_NAME = "5";
     public static final String NAME_SUCCESS = "6";
     public static final String LEFT_CHANNELS = "7";
     public static final String USER_JOINED_CHANNEL = "8";

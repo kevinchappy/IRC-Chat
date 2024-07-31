@@ -6,11 +6,11 @@ import java.util.List;
 
 public class listGUI {
     private final JFrame frame;
+    private final DefaultListModel<String> listModel = new DefaultListModel<>();
     private JList<String> list1;
     private JPanel panel1;
     private JButton leftButton;
     private JButton rightButton;
-    private final DefaultListModel<String> listModel = new DefaultListModel<>();
 
     public listGUI(){
         list1.setModel(listModel);
@@ -20,8 +20,6 @@ public class listGUI {
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         frame.pack();
         frame.setSize(300, 500);
-
-
     }
 
     public void setTitle(String title){

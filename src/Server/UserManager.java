@@ -3,11 +3,14 @@ package Server;
 import java.util.ArrayList;
 import java.util.Vector;
 
-public class UserHandler {
+/**
+ * Class that wraps a vector of users and provides some helpful methods for
+ */
+public class UserManager {
     private final Vector<User> users = new Vector<>();
-    private final ChannelHandler ch;
+    private final ChannelManager ch;
 
-    public UserHandler(ChannelHandler ch){
+    public UserManager(ChannelManager ch){
         this.ch = ch;
     }
 

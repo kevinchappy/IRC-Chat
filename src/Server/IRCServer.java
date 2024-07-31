@@ -10,9 +10,9 @@ public class IRCServer {
     public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public static void main(String[] args) {
-        ChannelHandler channelHandler = new ChannelHandler();
-        UserHandler userHandler = new UserHandler(channelHandler);
-        Runnable clientHandler = new NewClientHandler(channelHandler, userHandler);
+        ChannelManager channelManager = new ChannelManager();
+        UserManager userManager = new UserManager(channelManager);
+        Runnable clientHandler = new NewClientHandler(channelManager, userManager);
         EXECUTOR.submit(clientHandler);
     }
 }

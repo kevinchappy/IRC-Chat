@@ -7,18 +7,16 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class User {
-    private final Socket socket;
     private final OutputStream outputStream;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private Vector<Channel> channels = new Vector<>();
+    private final Vector<Channel> channels = new Vector<>();
+    private final InputStream input;
     private String name;
-    private InputStream input;
     private PrintWriter writer;
 
 
 
     public User(Socket socket, String name) throws IOException {
-        this.socket = socket;
         this.name = name;
         this.input = socket.getInputStream();
         this.outputStream = socket.getOutputStream();

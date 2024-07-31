@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Class that wraps a Concurrent hashmap with channel names as keys and channel as values.
  * Provides some helpful methods
  */
-public class ChannelHandler {
+public class ChannelManager {
 
     private final ConcurrentHashMap<String, Channel> channels = new ConcurrentHashMap<>();
 

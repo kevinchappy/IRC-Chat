@@ -11,15 +11,15 @@ import java.util.*;
 
 public class ClientHandler implements Runnable {
     private final User user;
-    private final UserHandler ircServer;
-    private final ChannelHandler channelHandler;
+    private final UserManager ircServer;
+    private final ChannelManager channelManager;
     private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
     private boolean isAlive = true;
 
-    ClientHandler(User user, UserHandler ircServer, ChannelHandler channelHandler) {
+    ClientHandler(User user, UserManager ircServer, ChannelManager channelManager) {
         this.user = user;
         this.ircServer = ircServer;
-        this.channelHandler = channelHandler;
+        this.channelManager = channelManager;
     }
 
     @Override
@@ -124,7 +124,7 @@ public class ClientHandler implements Runnable {
     }
 
     private void handleChannel(User user) {
-        user.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANNEL_NAMES, channelHandler.getAllChannelNames()));
+        user.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANNEL_NAMES, channelManager.getAllChannelNames()));
     }
 
     private void handleNickname(ParsedMessage msg, User user) {
@@ -152,13 +152,13 @@ public class ClientHandler implements Runnable {
 
     private void handlePart(ParsedMessage msg, User user) {
         String channelName = msg.params().getFirst();
-        Channel channel = channelHandler.getChannel(channelName);
+        Channel channel = channelManager.getChannel(channelName);
 
         if (channel != null) {
             channel.remove(user);
             user.removeChannel(channel);
             if (channel.isEmpty()) {
-                channelHandler.removeChannel(channel.getName());
+                channelManager.removeChannel(channel.getName());
             } else {
                 channel.broadcast(MessageBuilder.build(ResponseCodes.USER_LEFT_CHANNEL,
                         new String[]{channelName, user.getName()}), null);
@@ -177,7 +177,7 @@ public class ClientHandler implements Runnable {
         if (param.length() <= 50 && param.startsWith("#") && !param.substring(1).contains("#") &&
                 !param.substring(1).contains(" ")) {
 
-            Channel channel = channelHandler.getChannel(param);
+            Channel channel = channelManager.getChannel(param);
 
             if (channel != null && !channel.getUserNames().contains(user.getName())) {
 
@@ -192,7 +192,7 @@ public class ClientHandler implements Runnable {
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.JOINED_CHANNEL, joinedChannelMessage.toArray(new String[0])));
             } else if (channel == null) {
                 channel = new Channel(param);
-                channelHandler.addChannels(channel);
+                channelManager.addChannels(channel);
                 channel.add(user);
                 user.addChannel(channel);
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.CREATED_CHANNEL, new String[]{channel.getName(), user.getName()}));
@@ -206,8 +206,8 @@ public class ClientHandler implements Runnable {
     /**
      * Helper method to handle sending message to all users in a channel or to a specific user.
      *
-     * @param msg
-     * @param user
+     * @param msg Message to be set
+     * @param user User that message originated from
      */
     private void handleSendMessage(ParsedMessage msg, User user) {
         //Ignore message if no body
@@ -215,7 +215,7 @@ public class ClientHandler implements Runnable {
             String param = msg.params().getFirst();
             User target;
             Channel channel;
-            if ((channel = channelHandler.getChannel(param)) != null && user.getChannels().contains(channelHandler.getChannel(param))) {
+            if ((channel = channelManager.getChannel(param)) != null && user.getChannels().contains(channelManager.getChannel(param))) {
 
                 channel.broadcast(MessageBuilder.build(ResponseCodes.CHANNEL_MSG,
                         new String[]{dateFormat.format(LocalDateTime.now()), user.getName(), channel.getName()}, msg.trailing()), null);
