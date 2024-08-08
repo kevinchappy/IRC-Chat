@@ -2,10 +2,16 @@ package helper;
 
 import java.util.ArrayList;
 
-public record ParsedMessage(String target, String command, ArrayList<String> params, String trailing) {
+/**
+ * A record representing a parsed message. Contains the message code, parameters and trailing message.
+ * @param command
+ * @param params
+ * @param trailing
+ */
+public record ParsedMessage(String command, ArrayList<String> params, String trailing) {
 
     @Override
     public String toString() {
-        return target + ", " + command + ", " + params + ", " + trailing;
+        return command + ", " + params + ", " + trailing;
     }
 }

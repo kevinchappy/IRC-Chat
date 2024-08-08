@@ -1,7 +1,7 @@
 package helper;
 
 /**
- * Defines response codes for response messages from server to users.
+ * Defines constant values of response codes for response messages from the server to users.
  */
 public class ResponseCodes{
     public static final String JOINED_SERVER = "0";

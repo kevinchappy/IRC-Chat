@@ -40,10 +40,9 @@ public class ServerMessageHandler implements Runnable {
                 }
             } catch (IOException e) {
                 break;
-            }finally {
-                kill();
             }
         }
+        kill();
     }
 
     public void kill() {
