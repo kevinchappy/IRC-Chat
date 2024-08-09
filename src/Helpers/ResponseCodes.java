@@ -1,4 +1,4 @@
-package helper;
+package Helpers;
 
 /**
  * Defines constant values of response codes for response messages from the server to users.

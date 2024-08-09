@@ -1,4 +1,4 @@
-package helper;
+package Helpers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,9 +9,7 @@ import java.util.Arrays;
  * Where the command is the message code, parameters an arbitrary list strings and crlf marks the end of message.
  */
 public final class MessageParser {
-
     public static final String delimiter = " ";
-
 
     /**
      * Parses raw message string into a ParsedMessage object.

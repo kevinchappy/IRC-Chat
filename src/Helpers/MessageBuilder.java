@@ -1,4 +1,4 @@
-package helper;
+package Helpers;
 
 
 /**
@@ -7,8 +7,6 @@ package helper;
  * Where the command is the message code, parameters a list strings with arbitrary length and crlf marks the end of message.
  */
 public final class MessageBuilder {
-
-
     public static final char DELIMITER = ' ';
 
     /**

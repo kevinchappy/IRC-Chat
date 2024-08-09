@@ -1,6 +1,6 @@
 package Server;
 
-import helper.*;
+import Helpers.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,25 +9,41 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * Threaded class that handles connection to client.
+ * Accepts messages from client and handles them accordingly.
+ */
 public class ClientHandler implements Runnable {
     private final User user;
-    private final UserManager ircServer;
+    private final UserManager userManager;
     private final ChannelManager channelManager;
     private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
     private boolean isAlive = true;
 
-    ClientHandler(User user, UserManager ircServer, ChannelManager channelManager) {
+    /**
+     * Instantiates new ClientHandler.
+     *
+     * @param user           User handled to be handled
+     * @param userManager    Object that handles all users connected to server
+     * @param channelManager Object that handles all channel on server
+     */
+    public ClientHandler(User user, UserManager userManager, ChannelManager channelManager) {
         this.user = user;
-        this.ircServer = ircServer;
+        this.userManager = userManager;
         this.channelManager = channelManager;
     }
 
+
+    /**
+     * Main loop that handles user connection and accepting messages..
+     * Does not accept messages if user has not changed their username.
+     * Handles closing connection if user disconnects.
+     */
     @Override
     public void run() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(user.getInput()));
             user.broadcastMessage(MessageBuilder.build(ResponseCodes.JOINED_SERVER, new String[]{user.getName()}, "Welcome to the server!"));
-
 
             String msg;
             while ((msg = in.readLine()) != null && isAlive) {
@@ -46,6 +62,7 @@ public class ClientHandler implements Runnable {
             handleExit(user);
 
         } catch (IOException e) {
+            isAlive = false;
             handleExit(user);
         }
     }
@@ -64,37 +81,34 @@ public class ClientHandler implements Runnable {
     private void handleMessage(ParsedMessage msg, User user) {
 
         switch (msg.command()) {
-            //Sends message to all users within given channels
             case MessageCodes.MESSAGE:
                 handleSendMessage(msg, user);
                 break;
-            //Server.User to join channel
-            //Create new channel if no channel already exists
-            //Server.Channel has to start with #
+
             case MessageCodes.JOIN:
                 handleJoin(msg, user);
                 break;
 
-            //Server.User leave channel
             case MessageCodes.PART:
                 handlePart(msg, user);
                 break;
 
-            //Change of user nickname
             case MessageCodes.NICKNAME:
                 handleNickname(msg, user);
                 break;
 
-            //Sends names of all users that are on the same channels as sender
             case MessageCodes.NAMES:
                 handleNames(user);
                 break;
+
             case MessageCodes.CHANNELS:
                 handleChannel(user);
                 break;
+
             case MessageCodes.ESTABLISH_PRIVATE_CHAT:
                 handleEstablishPrivateChat(msg, user);
                 break;
+
             case MessageCodes.EXIT:
                 isAlive = false;
                 break;
@@ -103,18 +117,31 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Handles establish private chat between two users.
+     * Checks if user that requester wants to private message exists and sends back appropriate response
+     *
+     * @param msg  The message that contains request information
+     * @param user The user that the request originates from
+     */
     private void handleEstablishPrivateChat(ParsedMessage msg, User user) {
         String target = msg.params().getFirst();
 
-        if (ircServer.userExists(target) && !target.equals(user.getName())) {
+        if (userManager.userExists(target) && !target.equals(user.getName())) {
             user.broadcastMessage(MessageBuilder.build(ResponseCodes.ESTABLISH_PRIVATE_RES, new String[]{target}));
         } else {
             user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_SUCH_USER, target + " does not exist."));
         }
     }
 
+    /**
+     * Handles sending list of all usernames to requesting user.
+     * Sends list of all usernames or error message if no names are available
+     *
+     * @param user The user that the request originates from
+     */
     private void handleNames(User user) {
-        ArrayList<String> names = ircServer.getAllUserNames();
+        ArrayList<String> names = userManager.getAllUserNames();
 
         if (names.isEmpty()) {
             user.broadcastMessage(MessageBuilder.build(ResponseCodes.ERR_NO_AVAILABLE_NAMES, "No available names."));
@@ -123,10 +150,24 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Handles sending list of all channel names to requesting user.
+     * Sends list of all channel names or error message if no names are available.
+     *
+     * @param user The user that the request originates from
+     */
     private void handleChannel(User user) {
         user.broadcastMessage(MessageBuilder.build(ResponseCodes.CHANNEL_NAMES, channelManager.getAllChannelNames()));
     }
 
+    /**
+     * Handles changing nickname for user.
+     * Checks that no other user has name and the new name adheres to name format
+     * Broadcasts name change to all users.
+     *
+     * @param msg  The message containing users new name
+     * @param user The user that the request originates from
+     */
     private void handleNickname(ParsedMessage msg, User user) {
         if (!msg.params().isEmpty()) {
             String oldName = user.getName();
@@ -135,11 +176,11 @@ public class ClientHandler implements Runnable {
             String newName = msg.params().getFirst();
             if (newName.length() >= 3 && newName.length() <= 12 && !newName.contains("#") &&
                     !newName.contains(":") && !newName.contains(" ") && !newName.equalsIgnoreCase("guest") &&
-                    ircServer.getUserByName(newName) == null) {
+                    userManager.getUserByName(newName) == null) {
 
                 user.setName(newName);
 
-                ircServer.broadCastToAllUsers(MessageBuilder.build(ResponseCodes.CHANGED_NAME, new String[]{oldName, newName}));
+                userManager.broadCastToAllUsers(MessageBuilder.build(ResponseCodes.CHANGED_NAME, new String[]{oldName, newName}));
 
                 user.broadcastMessage(MessageBuilder.build(ResponseCodes.NAME_SUCCESS, new String[]{newName}));
 
@@ -150,16 +191,24 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Handles user leaving channel
+     * Deletes channel if no users are left.
+     * Message is broadcast to all users in channel if user successfully leaves channel
+     *
+     * @param msg  The message containing channel name parameter
+     * @param user The user the message originates from
+     */
     private void handlePart(ParsedMessage msg, User user) {
         String channelName = msg.params().getFirst();
         Channel channel = channelManager.getChannel(channelName);
 
         if (channel != null) {
-            channel.remove(user);
+            boolean removed = channel.remove(user);
             user.removeChannel(channel);
             if (channel.isEmpty()) {
                 channelManager.removeChannel(channel.getName());
-            } else {
+            } else if (removed) {
                 channel.broadcast(MessageBuilder.build(ResponseCodes.USER_LEFT_CHANNEL,
                         new String[]{channelName, user.getName()}), null);
             }
@@ -171,6 +220,15 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Handles user joining channel.
+     * Validates that channel name is in accepted format.
+     * Creates channel if it does not already exist
+     * Broadcasts to all users in channel that new user has joined
+     *
+     * @param msg  The msg containing channel name parameter
+     * @param user The user the request originates from
+     */
     private void handleJoin(ParsedMessage msg, User user) {
         String param = msg.params().getFirst();
 
@@ -204,10 +262,12 @@ public class ClientHandler implements Runnable {
     }
 
     /**
-     * Helper method to handle sending message to all users in a channel or to a specific user.
+     * Handles sending message from a user to all users in a channel or as private message to specific user
+     * Checks if message target is a channel or user.
+     * Sends error if no recipient is found
      *
-     * @param msg Message to be set
-     * @param user User that message originated from
+     * @param msg  Message containing parameters and trailing message
+     * @param user User that the message originates from
      */
     private void handleSendMessage(ParsedMessage msg, User user) {
         //Ignore message if no body
@@ -220,7 +280,7 @@ public class ClientHandler implements Runnable {
                 channel.broadcast(MessageBuilder.build(ResponseCodes.CHANNEL_MSG,
                         new String[]{dateFormat.format(LocalDateTime.now()), user.getName(), channel.getName()}, msg.trailing()), null);
 
-            } else if ((target = ircServer.getUserByName(param)) != null && !target.getName().equalsIgnoreCase("guest") && !target.equals(user)) {
+            } else if ((target = userManager.getUserByName(param)) != null && !target.getName().equalsIgnoreCase("guest") && !target.equals(user)) {
 
                 String time = dateFormat.format(LocalDateTime.now());
                 target.broadcastMessage(MessageBuilder.build(ResponseCodes.USER_MSG, new String[]{time, user.getName()}, msg.trailing()));
@@ -232,8 +292,15 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Handles user disconnecting from the chat server.
+     * Removes user from all channels and the user list.
+     * Broadcasts this to all users.
+     *
+     * @param user The user that disconnected
+     */
     private void handleExit(User user) {
-        ircServer.removeUser(user);
-        ircServer.broadCastToAllUsers(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}));
+        userManager.removeUser(user);
+        userManager.broadCastToAllUsers(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}));
     }
 }

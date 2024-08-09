@@ -1,8 +1,8 @@
 package Client;
 
-import helper.MessageParser;
-import helper.ParsedMessage;
-import helper.ResponseCodes;
+import Helpers.MessageParser;
+import Helpers.ParsedMessage;
+import Helpers.ResponseCodes;
 
 import javax.swing.*;
 import java.io.*;
@@ -18,19 +18,29 @@ public class ServerMessageHandler implements Runnable {
     private final BufferedReader reader;
     private final Socket socket;
 
+    /**
+     * Instantiates ServerMessageHandler
+     *
+     * @param socket Server's socket
+     * @param reader Server input stream reader
+     * @param client Main program GUI component
+     * @param userList List of all users GUI component
+     * @param channelList List of all channels GUI component
+     */
     public ServerMessageHandler(Socket socket, BufferedReader reader, ClientGUIController client, UserList userList, ChannelList channelList) {
         this.reader = reader;
         this.client = client;
         this.userList = userList;
         this.channelList = channelList;
         this.socket = socket;
-
-
     }
 
+    /**
+     * Main loop for handling incoming messages from server. Parses messages and sends them to be handled.
+     * Restarts program if connection to server is closed or has error.
+     */
     @Override
     public void run() {
-
         ParsedMessage parsedMessage;
         while (true) {
             try {
@@ -45,6 +55,9 @@ public class ServerMessageHandler implements Runnable {
         kill();
     }
 
+    /**
+     * Closes connection to server. Destroys all ui elements and resets program to the start.
+     */
     public void kill() {
         try {
             socket.close();
@@ -57,6 +70,12 @@ public class ServerMessageHandler implements Runnable {
         Client.main(new String[]{});
     }
 
+    /**
+     * Handles incoming messages from the server.
+     * Handles different actions based on response code from the server.
+     *
+     * @param parsedMessage message to be handled
+     */
     private void handleMessage(ParsedMessage parsedMessage) {
         ArrayList<String> params = parsedMessage.params();
         String trailing = parsedMessage.trailing();

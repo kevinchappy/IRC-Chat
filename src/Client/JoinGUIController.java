@@ -16,15 +16,27 @@ public class JoinGUIController {
 
     private final JoinGUI gui = new JoinGUI();
 
+    /**
+     * Instantiates a new Join gui controller.
+     */
     public JoinGUIController(){
-        setButtonAction();
+        setButtonListener();
         setPortTextField();
     }
+
+    /**
+     * Shows GUI
+     */
     public void show(){
         gui.show();
     }
 
-    private void setButtonAction(){
+    /**
+     * Sets join channel button listener.
+     * When pressed, listener will attempt to grab information from
+     * the address and port textfields and attempt to initiate server connection.
+     */
+    private void setButtonListener(){
         gui.addButtonListener(v ->{
             String ip = gui.getAdressText();
             int port = -1;
@@ -56,10 +68,10 @@ public class JoinGUIController {
     }
 
 
-
     /**
      * Handles initiating connection to server.
-     *
+     * Creates PrintWriter and BufferedReader to server that are used by other components.
+     * Initiates and starts all GUI components.
      *
      * @param address ip address for server
      * @param port    port number for server connection
@@ -73,7 +85,7 @@ public class JoinGUIController {
 
             UserList userList = new UserList(writer);
             ChannelList channelList = new ChannelList(writer);
-            ClientGUIController clientGUI = new ClientGUIController(userList, channelList, writer);
+            ClientGUIController clientGUI = new ClientGUIController(socket, userList, channelList, writer);
             Thread t = new Thread(new ServerMessageHandler(socket, reader, clientGUI, userList, channelList));
 
             t.start();

@@ -1,4 +1,4 @@
-package helper;
+package Helpers;
 
 /**
  * Defines constants of message codes that are used for messages from users to the server.
