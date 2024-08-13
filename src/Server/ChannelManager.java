@@ -45,7 +45,7 @@ public class ChannelManager {
      *
      * @return An array containing the names of all channels.
      */
-    public String[] getAllChannelNames(){
+    public String[] getAllChannelNames() {
         ArrayList<String> names = new ArrayList<>(channels.keySet());
         return names.toArray(names.toArray(new String[0]));
     }

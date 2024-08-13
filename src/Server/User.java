@@ -19,12 +19,11 @@ public class User {
     private String name;
 
 
-
     /**
      * Instantiates new User.
      *
      * @param socket User's socket
-     * @param name Name of user
+     * @param name   Name of user
      * @throws IOException possibly thrown when getting input and output streams.
      */
     public User(Socket socket, String name) throws IOException {
@@ -38,14 +37,14 @@ public class User {
     /**
      * Locks user's write lock.
      */
-    public void lock(){
+    public void lock() {
         lock.writeLock().lock();
     }
 
     /**
      * Unlocks user's write lock.
      */
-    public void unlock(){
+    public void unlock() {
         lock.writeLock().unlock();
     }
 
@@ -72,7 +71,7 @@ public class User {
      *
      * @param channel The channel to be added.
      */
-    public void addChannel(Channel channel){
+    public void addChannel(Channel channel) {
         channels.add(channel);
     }
 
@@ -81,7 +80,7 @@ public class User {
      *
      * @param channel The channel to be removed.
      */
-    public void removeChannel(Channel channel){
+    public void removeChannel(Channel channel) {
         channels.remove(channel);
     }
 
@@ -90,7 +89,7 @@ public class User {
      *
      * @return A vector containing the channels the user is part of.
      */
-    public Vector<Channel> getChannels(){
+    public Vector<Channel> getChannels() {
         return channels;
     }
 
@@ -133,11 +132,11 @@ public class User {
      */
     @Override
     public boolean equals(Object obj) {
-        if(obj == this){
+        if (obj == this) {
             return true;
         }
 
-        if(!(obj instanceof User other)){
+        if (!(obj instanceof User other)) {
             return false;
         }
 

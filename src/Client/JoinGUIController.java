@@ -19,7 +19,7 @@ public class JoinGUIController {
     /**
      * Instantiates a new Join gui controller.
      */
-    public JoinGUIController(){
+    public JoinGUIController() {
         setButtonListener();
         setPortTextField();
     }
@@ -27,7 +27,7 @@ public class JoinGUIController {
     /**
      * Shows GUI
      */
-    public void show(){
+    public void show() {
         gui.show();
     }
 
@@ -36,17 +36,17 @@ public class JoinGUIController {
      * When pressed, listener will attempt to grab information from
      * the address and port textfields and attempt to initiate server connection.
      */
-    private void setButtonListener(){
-        gui.addButtonListener(v ->{
+    private void setButtonListener() {
+        gui.addButtonListener(v -> {
             String ip = gui.getAdressText();
             int port = -1;
-            try{
+            try {
                 port = Integer.parseInt(gui.getPortText());
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(new JFrame(), "Error: Port number wrong format", "Dialog", JOptionPane.ERROR_MESSAGE);
             }
-            if(port != -1){
-                initiateConnection(ip,port);
+            if (port != -1) {
+                initiateConnection(ip, port);
             }
         });
     }
@@ -59,7 +59,7 @@ public class JoinGUIController {
             @Override
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
-                if(!Character.isDigit(c) || gui.getPortText().length() > 4){
+                if (!Character.isDigit(c) || gui.getPortText().length() > 4) {
                     e.consume();
                 }
             }

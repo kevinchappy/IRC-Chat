@@ -18,7 +18,7 @@ public final class MessageParser {
      *
      * @param rawMessage Raw message to be parsed.
      * @return A ParsedMessage object containing the command, parameters and trailing data.
-     *         Null is returned if message is invalid.
+     * Null is returned if message is invalid.
      */
     public static ParsedMessage parse(String rawMessage) {
         //String prefix = null;
@@ -38,8 +38,8 @@ public final class MessageParser {
         String[] array = rawMessage.split(delimiter);
 
 
-            command = array[0];
-            currentParameterI = 1;
+        command = array[0];
+        currentParameterI = 1;
 
         for (int i = currentParameterI; i < array.length; i++) {
             if (array[i].startsWith(":")) {

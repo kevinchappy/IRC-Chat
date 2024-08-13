@@ -18,7 +18,7 @@ public class NewClientHandler implements Runnable {
      * Instantiates new NewClientHandler
      *
      * @param channelManager Channel manager
-     * @param userManager User manager
+     * @param userManager    User manager
      */
     public NewClientHandler(int port, ChannelManager channelManager, UserManager userManager) {
         this.port = port;

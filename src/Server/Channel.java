@@ -40,7 +40,7 @@ public class Channel {
      *
      * @return 'true' if users list is empty, otherwise false
      */
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return users.isEmpty();
     }
 
@@ -62,7 +62,7 @@ public class Channel {
      */
     public synchronized void broadcast(String msg, String ignoredUser) {
         for (User user : users) {
-            if (ignoredUser == null || !user.getName().equals(ignoredUser)){
+            if (ignoredUser == null || !user.getName().equals(ignoredUser)) {
                 user.broadcastMessage(msg);
             }
         }
@@ -73,9 +73,9 @@ public class Channel {
      *
      * @return A list of the names of all users in the channel.
      */
-    public List<String> getUserNames(){
+    public List<String> getUserNames() {
         List<String> temp = new ArrayList<>();
-        for (User user : users){
+        for (User user : users) {
             temp.add(user.getName());
         }
         return temp;
@@ -105,11 +105,11 @@ public class Channel {
      */
     @Override
     public boolean equals(Object obj) {
-        if(obj == this){
+        if (obj == this) {
             return true;
         }
 
-        if(!(obj instanceof Channel other)){
+        if (!(obj instanceof Channel other)) {
             return false;
         }
 

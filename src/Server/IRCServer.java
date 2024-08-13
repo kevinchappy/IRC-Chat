@@ -14,11 +14,12 @@ public class IRCServer {
 
     /**
      * Entry point for server program.
+     *
      * @param args First arg accepted as port number
      */
     public static void main(String[] args) {
         int port = DEFAULT_PORT;
-        if (args.length != 0){
+        if (args.length != 0) {
             port = Integer.parseInt(args[0]);
         }
 

@@ -41,7 +41,7 @@ public class UserList {
     /**
      * Disposes GUI component.
      */
-    public void dispose(){
+    public void dispose() {
         gui.dispose();
     }
 
@@ -50,7 +50,7 @@ public class UserList {
      *
      * @param list the list of all users
      */
-    public void setList(List<String> list ){
+    public void setList(List<String> list) {
         gui.setList(list);
     }
 

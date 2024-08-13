@@ -21,10 +21,10 @@ public class ServerMessageHandler implements Runnable {
     /**
      * Instantiates ServerMessageHandler
      *
-     * @param socket Server's socket
-     * @param reader Server input stream reader
-     * @param client Main program GUI component
-     * @param userList List of all users GUI component
+     * @param socket      Server's socket
+     * @param reader      Server input stream reader
+     * @param client      Main program GUI component
+     * @param userList    List of all users GUI component
      * @param channelList List of all channels GUI component
      */
     public ServerMessageHandler(Socket socket, BufferedReader reader, ClientGUIController client, UserList userList, ChannelList channelList) {
@@ -61,7 +61,8 @@ public class ServerMessageHandler implements Runnable {
     public void kill() {
         try {
             socket.close();
-        } catch (IOException ignored){}
+        } catch (IOException ignored) {
+        }
 
         client.dispose();
         userList.dispose();

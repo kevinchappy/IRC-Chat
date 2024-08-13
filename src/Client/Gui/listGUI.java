@@ -3,6 +3,7 @@ package Client.Gui;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.util.List;
+
 /**
  * Class that defined GUI elements and exposes certain methods to be used in other classes.
  */
@@ -18,7 +19,7 @@ public class listGUI {
      * Instantiates new listGUI
      * Configures GUI parameters and sets list model.
      */
-    public listGUI(){
+    public listGUI() {
         list1.setModel(listModel);
 
         frame = new JFrame("");
@@ -33,21 +34,21 @@ public class listGUI {
      *
      * @param title The new title.
      */
-    public void setTitle(String title){
+    public void setTitle(String title) {
         frame.setTitle(title);
     }
 
     /**
      * Shows the GUI.
      */
-    public void show(){
+    public void show() {
         frame.setVisible(true);
     }
 
     /**
      * Disposes the GUI.
      */
-    public void dispose(){
+    public void dispose() {
         frame.dispose();
     }
 
@@ -56,7 +57,7 @@ public class listGUI {
      *
      * @return The selected value, or null if nothing is selected
      */
-    public String getSelected(){
+    public String getSelected() {
         return list1.getSelectedValue();
     }
 
@@ -65,7 +66,7 @@ public class listGUI {
      *
      * @param e The action listener .
      */
-    public void setLeftButtonListener(ActionListener e){
+    public void setLeftButtonListener(ActionListener e) {
         leftButton.addActionListener(e);
     }
 
@@ -74,7 +75,7 @@ public class listGUI {
      *
      * @param e The action listener.
      */
-    public void setRightButtonListener(ActionListener e){
+    public void setRightButtonListener(ActionListener e) {
         rightButton.addActionListener(e);
     }
 
@@ -83,7 +84,7 @@ public class listGUI {
      *
      * @param str The text to be displayed on the right button.
      */
-    public void setRightButtonName(String str){
+    public void setRightButtonName(String str) {
         rightButton.setText(str);
     }
 
@@ -92,7 +93,7 @@ public class listGUI {
      *
      * @param str The text to be displayed on the left button.
      */
-    public void setLeftButtonName(String str){
+    public void setLeftButtonName(String str) {
         leftButton.setText(str);
     }
 
@@ -101,7 +102,7 @@ public class listGUI {
      *
      * @param list The new list of values to set.
      */
-    public void setList(List<String> list){
+    public void setList(List<String> list) {
         listModel.clear();
         listModel.addAll(list);
     }

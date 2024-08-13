@@ -3,7 +3,7 @@ package Helpers;
 /**
  * Defines constant values of response codes for response messages from the server to users.
  */
-public class ResponseCodes{
+public class ResponseCodes {
     public static final String JOINED_SERVER = "0";
     public static final String CHANNEL_MSG = "1";
     public static final String USER_MSG = "9";

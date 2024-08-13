@@ -3,7 +3,7 @@ package Helpers;
 /**
  * Defines constants of message codes that are used for messages from users to the server.
  */
-public class MessageCodes{
+public class MessageCodes {
     public static final String MESSAGE = "PRIVMSG";
     public static final String JOIN = "JOIN";
     public static final String NICKNAME = "NICK";

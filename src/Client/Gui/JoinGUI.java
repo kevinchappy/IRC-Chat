@@ -19,26 +19,26 @@ public class JoinGUI {
      * Initiates new JoinGUI.
      * Sets parameters for GUI components.
      */
-    public JoinGUI(){
+    public JoinGUI() {
         frame = new JFrame("Join");
         frame.setContentPane(this.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        frame.setSize(400,250);
+        frame.setSize(400, 250);
         portTextField.setTransferHandler(null);
     }
 
     /**
      * Shows GUI component.
      */
-    public void show(){
+    public void show() {
         frame.setVisible(true);
     }
 
     /**
      * Disposes GUI component.
      */
-    public void dispose(){
+    public void dispose() {
         frame.dispose();
     }
 
@@ -47,7 +47,7 @@ public class JoinGUI {
      *
      * @param portNumber The new port number.
      */
-    public void setPortTextField(String portNumber){
+    public void setPortTextField(String portNumber) {
         portTextField.setText(portNumber);
     }
 
@@ -56,7 +56,7 @@ public class JoinGUI {
      *
      * @param e The action listener to be added.
      */
-    public void addButtonListener(ActionListener e){
+    public void addButtonListener(ActionListener e) {
         button1.addActionListener(e);
     }
 
@@ -65,7 +65,7 @@ public class JoinGUI {
      *
      * @param e The key listener to be added.
      */
-    public void addKeyListener(KeyListener e){
+    public void addKeyListener(KeyListener e) {
         portTextField.addKeyListener(e);
     }
 
@@ -74,7 +74,7 @@ public class JoinGUI {
      *
      * @return The text entered in the port text field.
      */
-    public String getPortText(){
+    public String getPortText() {
         return portTextField.getText();
     }
 
@@ -83,7 +83,7 @@ public class JoinGUI {
      *
      * @return The text in the address text field.
      */
-    public String getAdressText(){
+    public String getAdressText() {
         return addressTextField.getText();
     }
 

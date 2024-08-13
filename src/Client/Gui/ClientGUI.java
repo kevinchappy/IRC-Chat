@@ -69,7 +69,7 @@ public class ClientGUI {
      * @param msg     The message to append.
      * @param channel The channel to check if it is the active one.
      */
-    public void printToTextArea(String msg, ClientChannel channel){
+    public void printToTextArea(String msg, ClientChannel channel) {
         if (activeChannel != null && activeChannel.equals(channel)) {
             messageArea.append(msg);
         }
@@ -80,7 +80,7 @@ public class ClientGUI {
      *
      * @param e The listener to be added.
      */
-    public void addChannelListSelectionListener(ListSelectionListener e){
+    public void addChannelListSelectionListener(ListSelectionListener e) {
         channelList.addListSelectionListener(e);
     }
 
@@ -89,7 +89,7 @@ public class ClientGUI {
      *
      * @param e The listener to be added.
      */
-    public void sendButtonActionListener(ActionListener e){
+    public void sendButtonActionListener(ActionListener e) {
         sendButton.addActionListener(e);
     }
 
@@ -98,7 +98,7 @@ public class ClientGUI {
      *
      * @param e The listener to be added.
      */
-    public void messageTextFieldActionListener (ActionListener e){
+    public void messageTextFieldActionListener(ActionListener e) {
         messageTextField.addActionListener(e);
     }
 
@@ -107,7 +107,7 @@ public class ClientGUI {
      *
      * @param e The listener to be added.
      */
-    public void seeAllUsersActionListener(ActionListener e){
+    public void seeAllUsersActionListener(ActionListener e) {
         seeAllUsersButton.addActionListener(e);
     }
 
@@ -116,14 +116,14 @@ public class ClientGUI {
      *
      * @param e The listener to be added.
      */
-    public void seeAllChannelsActionListener(ActionListener e){
+    public void seeAllChannelsActionListener(ActionListener e) {
         seeAllChannelsButton.addActionListener(e);
     }
 
     /**
      * Resets the user list to an empty model.
      */
-    public void resetUserList(){
+    public void resetUserList() {
         userList.setModel(new DefaultListModel<>());
     }
 
@@ -133,7 +133,7 @@ public class ClientGUI {
      *
      * @return The active channel.
      */
-    public ClientChannel getActiveChannel(){
+    public ClientChannel getActiveChannel() {
         return activeChannel;
     }
 
@@ -142,7 +142,7 @@ public class ClientGUI {
      *
      * @param channel The channel to be set as active.
      */
-    public void setActiveChannel(ClientChannel channel){
+    public void setActiveChannel(ClientChannel channel) {
         activeChannel = channel;
     }
 
@@ -151,21 +151,21 @@ public class ClientGUI {
      *
      * @return The selected channel.
      */
-    public ClientChannel getSelectedChannel(){
+    public ClientChannel getSelectedChannel() {
         return channelList.getSelectedValue();
     }
 
     /**
      * Clears the message text field.
      */
-    public void clearTextField(){
+    public void clearTextField() {
         messageTextField.setText("");
     }
 
     /**
      * Clears the message area.
      */
-    public void clearMessageArea(){
+    public void clearMessageArea() {
         messageArea.setText("");
     }
 
@@ -174,7 +174,7 @@ public class ClientGUI {
      *
      * @return The text entered by the user.
      */
-    public String getText(){
+    public String getText() {
         return messageTextField.getText();
     }
 
@@ -183,16 +183,17 @@ public class ClientGUI {
      *
      * @param model The model to set for the user list.
      */
-    public void setUserListModel(DefaultListModel<String> model){
+    public void setUserListModel(DefaultListModel<String> model) {
         userList.setModel(model);
     }
 
     /**
      * Fills message text area with list of messages.
+     *
      * @param messages list of messages to fill message area with
      */
-    public void populateMessageArea(List<String> messages){
-        for (String msg : messages){
+    public void populateMessageArea(List<String> messages) {
+        for (String msg : messages) {
             messageArea.append(msg);
         }
     }

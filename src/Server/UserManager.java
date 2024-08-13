@@ -16,7 +16,7 @@ public class UserManager {
      *
      * @param ch the ChannelManager for the server.
      */
-    public UserManager(ChannelManager ch){
+    public UserManager(ChannelManager ch) {
         this.ch = ch;
     }
 
@@ -25,7 +25,7 @@ public class UserManager {
      *
      * @param user the user to be added
      */
-    public void add(User user){
+    public void add(User user) {
         users.add(user);
     }
 
@@ -34,7 +34,7 @@ public class UserManager {
      *
      * @param user the user to be removed
      */
-    public void removeUser(User user){
+    public void removeUser(User user) {
         users.remove(user);
         ch.removeUser(user);
     }
@@ -45,9 +45,9 @@ public class UserManager {
      * @param name the name of the user
      * @return 'true' if user exists, otherwise 'false'
      */
-    public boolean userExists(String name){
-        for (User user : users){
-            if (user.getName().equals(name)){
+    public boolean userExists(String name) {
+        for (User user : users) {
+            if (user.getName().equals(name)) {
                 return true;
             }
         }
@@ -60,9 +60,9 @@ public class UserManager {
      * @param name the name of the user
      * @return the User or null if it does not exist
      */
-    public User getUserByName(String name){
-        for (User user : users){
-            if (user.getName().equals(name)){
+    public User getUserByName(String name) {
+        for (User user : users) {
+            if (user.getName().equals(name)) {
                 return user;
             }
         }
@@ -74,8 +74,8 @@ public class UserManager {
      *
      * @param msg the msg
      */
-    public void broadCastToAllUsers(String msg){
-        for (User user : users){
+    public void broadCastToAllUsers(String msg) {
+        for (User user : users) {
             user.broadcastMessage(msg);
         }
     }
@@ -85,9 +85,9 @@ public class UserManager {
      *
      * @return ArrayList containing all usernames
      */
-    public ArrayList<String> getAllUserNames(){
+    public ArrayList<String> getAllUserNames() {
         ArrayList<String> names = new ArrayList<>();
-        for (User user : users){
+        for (User user : users) {
             names.add(user.getName());
         }
         return names;

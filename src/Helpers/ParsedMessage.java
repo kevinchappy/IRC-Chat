@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 /**
  * A record representing a parsed message. Contains the message code, parameters and trailing message.
+ *
  * @param command
  * @param params
  * @param trailing

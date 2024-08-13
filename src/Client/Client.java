@@ -8,6 +8,7 @@ public class Client {
 
     /**
      * Initializes and shows GUI for joining the server.
+     *
      * @param args ignored.
      */
     public static void main(String[] args) {

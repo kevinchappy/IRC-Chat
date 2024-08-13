@@ -41,7 +41,7 @@ public class ChannelList {
     /**
      * Disposes GUI.
      */
-    public void dispose(){
+    public void dispose() {
         gui.dispose();
     }
 
@@ -50,7 +50,7 @@ public class ChannelList {
      *
      * @param list the list of all channels
      */
-    public void setList(List<String> list ){
+    public void setList(List<String> list) {
         gui.setList(list);
     }
 
