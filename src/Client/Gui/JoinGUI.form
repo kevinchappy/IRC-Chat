@@ -47,7 +47,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="Button"/>
+          <text value="Join Server"/>
         </properties>
       </component>
       <grid id="c1465" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

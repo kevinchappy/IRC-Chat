@@ -48,6 +48,12 @@ public class User {
         lock.writeLock().unlock();
     }
 
+    /**
+     * Gets users name.
+     * Has take user's read lock to return.
+     *
+     * @return The name of the user
+     */
     public String getName() {
         lock.readLock().lock();
         try {

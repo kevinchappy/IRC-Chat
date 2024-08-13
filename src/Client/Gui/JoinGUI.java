@@ -20,7 +20,7 @@ public class JoinGUI {
      * Sets parameters for GUI components.
      */
     public JoinGUI() {
-        frame = new JFrame("Join");
+        frame = new JFrame("Join IRC-Server");
         frame.setContentPane(this.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
