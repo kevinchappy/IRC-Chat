@@ -79,8 +79,7 @@ public class JoinGUIController {
     public void initiateConnection(String address, int port) {
         try {
             Socket socket = new Socket(address, port);
-            PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),
-                    StandardCharsets.ISO_8859_1), true);
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.ISO_8859_1), true);
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             UserList userList = new UserList(writer);
