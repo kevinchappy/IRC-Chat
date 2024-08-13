@@ -302,5 +302,6 @@ public class ClientHandler implements Runnable {
     private void handleExit(User user) {
         userManager.removeUser(user);
         userManager.broadCastToAllUsers(MessageBuilder.build(ResponseCodes.USER_EXIT, new String[]{user.getName()}));
+        System.out.println("Current users: " + userManager.size());
     }
 }

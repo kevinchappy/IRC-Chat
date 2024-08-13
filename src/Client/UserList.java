@@ -60,7 +60,6 @@ public class UserList {
      * The right button listener sends a USERS command to retrieve a list of all channels from the server
      */
     private void setButtonListeners() {
-        System.out.println("set button listeners");
         gui.setLeftButtonListener(e -> {
             String str = gui.getSelected();
             if (str != null) {
@@ -71,7 +70,6 @@ public class UserList {
 
         gui.setRightButtonListener(e -> {
             String formattedMessage = MessageBuilder.build(MessageCodes.NAMES);
-            System.out.println("sending: " + formattedMessage);
             writer.println(formattedMessage);
         });
     }

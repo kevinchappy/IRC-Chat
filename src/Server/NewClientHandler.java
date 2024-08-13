@@ -43,9 +43,9 @@ public class NewClientHandler implements Runnable {
                     userManager.add(user);
                     Runnable clientHandler = new ClientHandler(user, userManager, channelManager);
                     IRCServer.EXECUTOR.submit(clientHandler);
-
+                    System.out.println("Current users: " + userManager.size());
                 } catch (IOException ex) {
-                    System.err.println("UNABLE TO ACCEPT NEW USER");
+                    System.err.println("ERROR WHEN ACCEPTING NEW USER");
                 }
             }
         } catch (IOException ex) {

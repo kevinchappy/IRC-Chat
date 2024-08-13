@@ -21,6 +21,14 @@ public class UserManager {
     }
 
     /**
+     * Gets the amount of users on server.
+     *
+     * @return size of users list
+     */
+    public int size(){
+        return users.size();
+    }
+    /**
      * Adds user to the server
      *
      * @param user the user to be added

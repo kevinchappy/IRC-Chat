@@ -83,7 +83,6 @@ public class ServerMessageHandler implements Runnable {
         String channelName;
         String userName;
         String timeAndDate;
-        System.out.println(parsedMessage);
         switch (parsedMessage.command()) {
             case ResponseCodes.CHANNEL_MSG:
                 channelName = params.get(2);

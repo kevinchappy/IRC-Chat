@@ -97,10 +97,7 @@ public class ClientChannel {
     public synchronized void updateUser(String oldName, String newName) {
         int index = usersListModel.indexOf(oldName);
         if (index != -1) {
-            System.out.println(usersListModel.get(index));
             usersListModel.setElementAt(newName, index);
-            System.out.println(usersListModel.get(index) + "\n");
-
         }
     }
 
