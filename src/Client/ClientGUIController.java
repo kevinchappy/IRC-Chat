@@ -26,17 +26,17 @@ public class ClientGUIController {
     /**
      * Instantiates a new Client gui controller.
      *
-     * @param socket         Server socket
-     * @param allUserListController    The user list GUI component
-     * @param allChannelListController The channel list GUI component
-     * @param writer         Writer to server
+     * @param socket                Server socket
+     * @param userListController    The user list GUI component
+     * @param channelListController The channel list GUI component
+     * @param writer                Writer to server
      */
-    public ClientGUIController(Socket socket, UserListController allUserListController, ChannelListController allChannelListController, PrintWriter writer) {
+    public ClientGUIController(Socket socket, UserListController userListController, ChannelListController channelListController, PrintWriter writer) {
         this.socket = socket;
         this.writer = writer;
         this.gui = new ClientGUI();
-        this.allUserListController = allUserListController;
-        this.allChannelListController = allChannelListController;
+        this.allUserListController = userListController;
+        this.allChannelListController = channelListController;
 
         setListeners();
         gui.show();
