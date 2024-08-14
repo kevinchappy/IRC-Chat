@@ -13,8 +13,8 @@ import java.util.ArrayList;
 public class ServerMessageHandler implements Runnable {
 
     private final ClientGUIController client;
-    private final UserList userList;
-    private final ChannelList channelList;
+    private final UserListController userListController;
+    private final ChannelListController channelListController;
     private final BufferedReader reader;
     private final Socket socket;
 
@@ -24,14 +24,14 @@ public class ServerMessageHandler implements Runnable {
      * @param socket      Server's socket
      * @param reader      Server input stream reader
      * @param client      Main program GUI component
-     * @param userList    List of all users GUI component
-     * @param channelList List of all channels GUI component
+     * @param userListController    List of all users GUI component
+     * @param channelListController List of all channels GUI component
      */
-    public ServerMessageHandler(Socket socket, BufferedReader reader, ClientGUIController client, UserList userList, ChannelList channelList) {
+    public ServerMessageHandler(Socket socket, BufferedReader reader, ClientGUIController client, UserListController userListController, ChannelListController channelListController) {
         this.reader = reader;
         this.client = client;
-        this.userList = userList;
-        this.channelList = channelList;
+        this.userListController = userListController;
+        this.channelListController = channelListController;
         this.socket = socket;
     }
 
@@ -65,8 +65,8 @@ public class ServerMessageHandler implements Runnable {
         }
 
         client.dispose();
-        userList.dispose();
-        channelList.dispose();
+        userListController.dispose();
+        channelListController.dispose();
 
         Client.main(new String[]{});
     }
@@ -157,11 +157,11 @@ public class ServerMessageHandler implements Runnable {
                 break;
 
             case ResponseCodes.NAME_LIST:
-                userList.setList(params);
+                userListController.setList(params);
                 break;
 
             case ResponseCodes.CHANNEL_NAMES:
-                channelList.setList(params);
+                channelListController.setList(params);
                 break;
 
             default:

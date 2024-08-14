@@ -19,24 +19,24 @@ public class ClientGUIController {
     private final Socket socket;
     private final ClientGUI gui;
     private final PrintWriter writer;
-    private final UserList allUserList;
-    private final ChannelList allChannelList;
+    private final UserListController allUserListController;
+    private final ChannelListController allChannelListController;
     private String name;
 
     /**
      * Instantiates a new Client gui controller.
      *
      * @param socket         Server socket
-     * @param allUserList    The user list GUI component
-     * @param allChannelList The channel list GUI component
+     * @param allUserListController    The user list GUI component
+     * @param allChannelListController The channel list GUI component
      * @param writer         Writer to server
      */
-    public ClientGUIController(Socket socket, UserList allUserList, ChannelList allChannelList, PrintWriter writer) {
+    public ClientGUIController(Socket socket, UserListController allUserListController, ChannelListController allChannelListController, PrintWriter writer) {
         this.socket = socket;
         this.writer = writer;
         this.gui = new ClientGUI();
-        this.allUserList = allUserList;
-        this.allChannelList = allChannelList;
+        this.allUserListController = allUserListController;
+        this.allChannelListController = allChannelListController;
 
         setListeners();
         gui.show();
@@ -70,9 +70,9 @@ public class ClientGUIController {
             }
         });
 
-        gui.seeAllChannelsActionListener(e -> allChannelList.show());
+        gui.seeAllChannelsActionListener(e -> allChannelListController.show());
 
-        gui.seeAllUsersActionListener(e -> allUserList.show());
+        gui.seeAllUsersActionListener(e -> allUserListController.show());
 
         gui.addChannelListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {

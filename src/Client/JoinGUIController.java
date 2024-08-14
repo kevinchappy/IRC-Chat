@@ -82,10 +82,10 @@ public class JoinGUIController {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.ISO_8859_1), true);
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            UserList userList = new UserList(writer);
-            ChannelList channelList = new ChannelList(writer);
-            ClientGUIController clientGUI = new ClientGUIController(socket, userList, channelList, writer);
-            Thread t = new Thread(new ServerMessageHandler(socket, reader, clientGUI, userList, channelList));
+            UserListController userListController = new UserListController(writer);
+            ChannelListController channelListController = new ChannelListController(writer);
+            ClientGUIController clientGUI = new ClientGUIController(socket, userListController, channelListController, writer);
+            Thread t = new Thread(new ServerMessageHandler(socket, reader, clientGUI, userListController, channelListController));
 
             t.start();
             gui.dispose();

@@ -11,7 +11,7 @@ import java.util.List;
  * Class for handling getting and displaying a list of all existing channels on the server.
  * Also allows for joining channels by selecting channels in the list.
  */
-public class ChannelList {
+public class ChannelListController {
     private final listGUI gui = new listGUI();
     private final PrintWriter writer;
 
@@ -22,7 +22,7 @@ public class ChannelList {
      *
      * @param writer the writer to server socket's output stream
      */
-    public ChannelList(PrintWriter writer) {
+    public ChannelListController(PrintWriter writer) {
         this.writer = writer;
         gui.setLeftButtonName("Join");
         gui.setRightButtonName("Refresh");

@@ -11,7 +11,7 @@ import java.util.List;
  * Class for handling getting and displaying a list of all existing users on the server.
  * Also allows for starting private message channels with users in list.
  */
-public class UserList {
+public class UserListController {
     private final listGUI gui = new listGUI();
     private final PrintWriter writer;
 
@@ -22,7 +22,7 @@ public class UserList {
      *
      * @param writer the writer to server socket's output stream
      */
-    public UserList(PrintWriter writer) {
+    public UserListController(PrintWriter writer) {
         this.writer = writer;
         gui.setLeftButtonName("Private Message");
         gui.setRightButtonName("Refresh");

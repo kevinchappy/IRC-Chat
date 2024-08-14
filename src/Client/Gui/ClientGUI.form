@@ -54,7 +54,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="af068" class="javax.swing.JList" binding="channelList">
+          <component id="af068" class="javax.swing.JList" binding="channelListController">
             <constraints/>
             <properties>
               <selectionMode value="0"/>
@@ -71,7 +71,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="df67b" class="javax.swing.JList" binding="userList">
+          <component id="df67b" class="javax.swing.JList" binding="userListController">
             <constraints/>
             <properties>
               <selectionMode value="0"/>
