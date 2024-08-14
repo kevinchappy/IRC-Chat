@@ -30,7 +30,6 @@ public class ClientChannel {
         }
     }
 
-
     /**
      * Gets name of channel.
      *

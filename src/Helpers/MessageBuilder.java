@@ -3,7 +3,7 @@ package Helpers;
 
 /**
  * Static class that contains method to build messages according to the following format:
- * <command> <parameters> crlf
+ * <command> <parameters> CRLF
  * Where the command is the message code, parameters a list strings with arbitrary length and crlf marks the end of message.
  */
 public final class MessageBuilder {
@@ -33,7 +33,7 @@ public final class MessageBuilder {
     /**
      * Builds a formatted string that adheres to the message format.
      * Appends the message code, parameters and trailing into one string and delimits them with blank spaces.
-     * Checks that the trailing part starts with a ':' and that the message ends with crlf
+     * Checks that the trailing part starts with a ':' and that the message ends with CRLF.
      *
      * @param code     The message code
      * @param params   List of message parameters

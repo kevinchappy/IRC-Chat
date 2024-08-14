@@ -113,7 +113,7 @@ public class User {
      *
      * @param msg The message to be sent
      */
-    public void broadcastMessage(String msg) {
+    public synchronized void broadcastMessage(String msg) {
         writer.println(msg);
         writer.flush();
     }

@@ -25,9 +25,10 @@ public class UserManager {
      *
      * @return size of users list
      */
-    public int size(){
+    public int size() {
         return users.size();
     }
+
     /**
      * Adds user to the server
      *

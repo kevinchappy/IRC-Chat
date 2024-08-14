@@ -17,8 +17,8 @@ public class NewClientHandler implements Runnable {
     /**
      * Instantiates new NewClientHandler
      *
-     * @param channelManager Channel manager
-     * @param userManager    User manager
+     * @param channelManager Channel manager for server
+     * @param userManager    User manager for server
      */
     public NewClientHandler(int port, ChannelManager channelManager, UserManager userManager) {
         this.port = port;
@@ -31,7 +31,7 @@ public class NewClientHandler implements Runnable {
      * Endlessly loops and waits for new clients to connect to server.
      * New user is given default name guest.
      * user is added to ircServer.userList.
-     * New Server.ClientHandler thread is spawned for specific user.
+     * New ClientHandler thread is spawned for specific user.
      */
     @Override
     public void run() {

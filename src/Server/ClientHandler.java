@@ -264,7 +264,7 @@ public class ClientHandler implements Runnable {
     /**
      * Handles sending message from a user to all users in a channel or as private message to specific user
      * Checks if message target is a channel or user.
-     * Sends error if no recipient is found
+     * Sends error if no valid recipient is found
      *
      * @param msg  Message containing parameters and trailing message
      * @param user User that the message originates from

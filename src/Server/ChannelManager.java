@@ -41,7 +41,7 @@ public class ChannelManager {
 
 
     /**
-     * Creates an array of all channel names from the channels map.
+     * Gets an array of all channel names.
      *
      * @return An array containing the names of all channels.
      */
@@ -51,7 +51,7 @@ public class ChannelManager {
     }
 
     /**
-     * Remove user from all channels. Removes channel if it is empty after removing user
+     * Remove user from all channels. Removes channel if it is empty after removing user.
      *
      * @param user the user
      */

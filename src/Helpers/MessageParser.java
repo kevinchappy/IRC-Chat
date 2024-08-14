@@ -21,12 +21,10 @@ public final class MessageParser {
      * Null is returned if message is invalid.
      */
     public static ParsedMessage parse(String rawMessage) {
-        //String prefix = null;
         String command;
         ArrayList<String> params = new ArrayList<>();
         String trailing = null;
-        int currentParameterI;
-
+        int currentParam;
 
         //Valid message has to end with \r\n
         if (rawMessage.endsWith("\\r\\n")) {
@@ -37,11 +35,10 @@ public final class MessageParser {
 
         String[] array = rawMessage.split(delimiter);
 
-
         command = array[0];
-        currentParameterI = 1;
+        currentParam = 1;
 
-        for (int i = currentParameterI; i < array.length; i++) {
+        for (int i = currentParam; i < array.length; i++) {
             if (array[i].startsWith(":")) {
                 trailing = (String.join(delimiter, Arrays.copyOfRange(array, i, array.length)));
                 break;
