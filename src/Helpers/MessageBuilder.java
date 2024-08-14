@@ -10,21 +10,21 @@ public final class MessageBuilder {
     public static final char DELIMITER = ' ';
 
     /**
-     * @see MessageBuilder#build(String, String[], String)
+     * Overloaded method of {@link MessageBuilder#build(String, String[], String)}
      */
     public static String build(String code) {
         return build(code, null, null);
     }
 
     /**
-     * @see MessageBuilder#build(String, String[], String)
+     * Overloaded method of {@link MessageBuilder#build(String, String[], String)}
      */
     public static String build(String code, String[] params) {
         return build(code, params, null);
     }
 
     /**
-     * @see MessageBuilder#build(String, String[], String)
+     * Overloaded method of {@link MessageBuilder#build(String, String[], String)}
      */
     public static String build(String code, String trailing) {
         return build(code, null, trailing);
