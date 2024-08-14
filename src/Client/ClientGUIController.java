@@ -234,7 +234,6 @@ public class ClientGUIController {
         }
     }
 
-
     /**
      * Removes specified channel from the GUI's channel list model.
      *
